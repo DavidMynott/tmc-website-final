@@ -188,7 +188,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text-dark);background:var(--cr
 
 <script>
 // LOGIN
-function checkGate(){var e=document.getElementById("gate-email").value.trim(),p=document.getElementById("gate-password").value;if(e==="david@themarksmenco.com.au"&&p==="DAVIDtmc2026!"){document.getElementById("login-gate").style.display="none";sessionStorage.setItem("admin_auth","1")}else{var err=document.getElementById("gate-error");err.textContent="Invalid email or password.";err.style.display="block"}}
+function checkGate(){var e=document.getElementById("gate-email").value.trim(),p=document.getElementById("gate-password").value;if((e==="david@themarksmenco.com.au"&&p==="DAVIDtmc2025!")||(e==="admin@themarksmenco.com.au"&&p==="ADMINtmc2025!")){document.getElementById("login-gate").style.display="none";sessionStorage.setItem("admin_auth","1")}else{var err=document.getElementById("gate-error");err.textContent="Invalid email or password.";err.style.display="block"}}
 if(sessionStorage.getItem("admin_auth")==="1")document.getElementById("login-gate").style.display="none";
 
 // SUPABASE
