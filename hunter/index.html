@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Marksmen Co — Hunter Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --green-dark: #2d3327;
+  --green-mid: #4a6741;
+  --green-hover: #3d5635;
+  --olive: #6b7c59;
+  --tan: #87805e;
+  --cream: #f5f4ed;
+  --cream-lt: #faf9f7;
+  --beige: #c9b896;
+  --beige-stone: #e8e6dd;
+  --green-soft: #e8f5e9;
+  --text-dark: #1a1a16;
+  --text-mid: #4a4a3a;
+  --text-lt: #6b7265;
+  --white: #ffffff;
+  --border: #d4d0c8;
+  --red: #c0392b;
+  --red-bg: #fdf2f2;
+  --gold: #b8860b;
+  --gold-bg: #fdf8e8;
+  --success: #27ae60;
+  --success-bg: #eafaf1;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+  --radius: 8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;color:var(--text-dark);background:var(--cream-lt);min-height:100vh;}
+
+/* NAV */
+.nav{background:var(--green-dark);padding:0 1.5rem;display:flex;justify-content:space-between;align-items:center;height:3.5rem;position:sticky;top:0;z-index:100;}
+.nav-brand{display:flex;align-items:center;gap:0.625rem;color:var(--cream);}
+.nav-logo{width:32px;height:32px;background:var(--green-mid);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;color:var(--white);}
+.nav-name{font-weight:600;font-size:0.9375rem;}
+.nav-sub{color:var(--beige);font-size:0.75rem;font-weight:400;margin-left:0.25rem;}
+.nav-links{display:flex;gap:0.25rem;align-items:center;}
+.nav-btn{background:none;border:1px solid rgba(255,255,255,0.15);color:var(--cream);padding:0.35rem 0.75rem;border-radius:4px;cursor:pointer;font-size:0.8rem;font-family:inherit;transition:all 0.2s;}
+.nav-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);}
+.nav-btn.active{background:var(--green-mid);border-color:var(--green-mid);}
+
+/* LAYOUT */
+.page{display:none;}.page.active{display:block;}
+.container{max-width:720px;margin:0 auto;padding:2rem 1rem;}
+.container-wide{max-width:960px;}
+.container-narrow{max-width:480px;}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;box-shadow:var(--shadow);}
+.card-header{font-size:1.0625rem;font-weight:600;margin-bottom:0.875rem;padding-bottom:0.625rem;border-bottom:1px solid var(--border);}
+
+/* FORMS */
+.fg{margin-bottom:1rem;}
+.fg label{display:block;font-size:0.8125rem;font-weight:600;margin-bottom:0.3rem;}
+.fg .hint{font-size:0.75rem;color:var(--text-lt);margin-bottom:0.3rem;font-weight:400;}
+.fg input,.fg select,.fg textarea{width:100%;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:6px;font-size:0.9rem;font-family:inherit;color:var(--text-dark);background:var(--white);transition:border-color 0.2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--green-mid);box-shadow:0 0 0 3px rgba(74,103,65,0.1);}
+.fg textarea{min-height:90px;resize:vertical;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
+@media(max-width:500px){.form-row{grid-template-columns:1fr;}}
+
+/* FILE UPLOAD */
+.file-upload{border:2px dashed var(--border);border-radius:var(--radius);padding:1.25rem;text-align:center;cursor:pointer;transition:all 0.2s;color:var(--text-lt);font-size:0.8125rem;}
+.file-upload:hover{border-color:var(--green-mid);background:var(--green-soft);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.65rem 1.25rem;border:none;border-radius:6px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;}
+.btn-primary{background:var(--green-mid);color:var(--white);}
+.btn-primary:hover{background:var(--green-hover);}
+.btn-secondary{background:var(--beige-stone);color:var(--text-dark);}
+.btn-secondary:hover{background:var(--beige);}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--text-mid);}
+.btn-outline:hover{background:var(--cream);border-color:var(--text-lt);}
+.btn-gold{background:var(--gold);color:var(--white);}
+.btn-gold:hover{background:#a07608;}
+.btn-full{width:100%;}
+.btn-sm{padding:0.35rem 0.75rem;font-size:0.8rem;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:0.3rem;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.7rem;font-weight:600;letter-spacing:0.02em;}
+.badge-certified{background:var(--green-mid);color:var(--white);}
+.badge-insured{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold);}
+.badge-available{background:var(--success-bg);color:var(--success);border:1px solid var(--success);}
+
+/* ALERTS */
+.alert{padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.8125rem;line-height:1.5;}
+.alert-info{background:#e8f4f8;color:#2c6e8a;border:1px solid #b8dce8;}
+.alert-success{background:var(--success-bg);color:#1e7e34;border:1px solid #a3d9b1;}
+.alert-warning{background:var(--gold-bg);color:#7d6608;border:1px solid #e8d48a;}
+.alert-error{background:var(--red-bg);color:var(--red);border:1px solid #e8a8a8;}
+
+/* SPECIES CHECKLIST */
+.species-list{display:flex;flex-direction:column;}
+.species-row{display:flex;align-items:center;gap:0.625rem;padding:0.75rem 0.875rem;border-bottom:1px solid var(--border);transition:background 0.15s;cursor:pointer;}
+.species-row:last-child{border-bottom:none;}
+.species-row:hover{background:var(--cream);}
+.species-row.selected{background:var(--green-soft);}
+.species-row input[type="checkbox"]{width:16px;height:16px;accent-color:var(--green-mid);cursor:pointer;flex-shrink:0;}
+.species-name{font-weight:600;font-size:0.875rem;}
+.species-calibre{font-size:0.75rem;color:var(--text-lt);margin-top:0.1rem;}
+.species-permit{font-size:0.625rem;color:var(--gold);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;}
+.permit-warning{background:var(--gold-bg);border:1px solid var(--gold);border-radius:6px;padding:0.625rem 0.875rem;font-size:0.75rem;color:var(--gold);margin-top:0.625rem;display:none;}
+.permit-warning.visible{display:block;}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1rem;}
+.tab{padding:0.5rem 0.875rem;font-size:0.8125rem;font-weight:500;color:var(--text-lt);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;}
+.tab:hover{color:var(--text-dark);}
+.tab.active{color:var(--green-mid);border-bottom-color:var(--green-mid);font-weight:600;}
+.tab-content{display:none;}.tab-content.active{display:block;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.75rem;margin-bottom:1rem;}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:0.875rem;text-align:center;box-shadow:var(--shadow);}
+.stat-number{font-size:1.5rem;font-weight:700;color:var(--green-mid);}
+.stat-label{font-size:0.7rem;color:var(--text-lt);margin-top:0.15rem;text-transform:uppercase;letter-spacing:0.04em;}
+
+/* TRAINING MODULE */
+.module-list{display:flex;flex-direction:column;gap:0.5rem;}
+.module-card{display:flex;align-items:center;gap:1rem;padding:1rem;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all 0.2s;}
+.module-card:hover{box-shadow:var(--shadow-lg);border-color:var(--green-mid);}
+.module-card.completed{border-left:4px solid var(--success);}
+.module-card.locked{opacity:0.5;cursor:not-allowed;}
+.module-card.current{border-left:4px solid var(--green-mid);}
+.module-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.875rem;flex-shrink:0;}
+.module-num-pending{background:var(--beige-stone);color:var(--text-mid);}
+.module-num-current{background:var(--green-mid);color:var(--white);}
+.module-num-complete{background:var(--success);color:var(--white);}
+.module-info{flex:1;min-width:0;}
+.module-title{font-weight:600;font-size:0.9rem;}
+.module-desc{font-size:0.75rem;color:var(--text-lt);margin-top:0.15rem;}
+.module-status{font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;}
+.module-status-complete{color:var(--success);}
+.module-status-current{color:var(--green-mid);}
+.module-status-locked{color:var(--text-lt);}
+
+/* PROGRESS BAR */
+.progress-bar{height:8px;background:var(--beige-stone);border-radius:4px;overflow:hidden;margin-bottom:1rem;}
+.progress-fill{height:100%;background:var(--green-mid);border-radius:4px;transition:width 0.5s ease;}
+
+/* PROFILE PREVIEW */
+.profile-preview{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+.profile-header-bar{background:var(--green-dark);padding:1.25rem;display:flex;gap:1rem;align-items:center;}
+.profile-avatar{width:64px;height:64px;border-radius:50%;background:var(--olive);border:2px solid var(--beige);display:flex;align-items:center;justify-content:center;color:var(--cream);font-size:1.5rem;font-weight:700;flex-shrink:0;}
+.profile-header-text{color:var(--cream);}
+.profile-header-text h2{font-size:1.125rem;margin-bottom:0.15rem;}
+.profile-location{color:var(--beige);font-size:0.8125rem;}
+.profile-body{padding:1.25rem;}
+.profile-badges{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem;}
+.profile-bio{color:var(--text-mid);font-size:0.875rem;line-height:1.6;margin-bottom:1rem;}
+.species-table{width:100%;border-collapse:collapse;margin-bottom:1rem;}
+.species-table th{text-align:left;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-lt);padding:0.4rem 0.625rem;border-bottom:2px solid var(--border);}
+.species-table td{padding:0.4rem 0.625rem;font-size:0.8125rem;color:var(--text-mid);border-bottom:1px solid var(--cream);}
+
+/* CONTACT RELEASE */
+.contact-release{background:var(--success-bg);border:2px solid var(--success);border-radius:var(--radius);padding:1.25rem;text-align:center;}
+.contact-release h3{color:var(--success);margin-bottom:0.5rem;}
+.contact-detail{display:flex;justify-content:center;gap:1.5rem;margin-top:0.75rem;}
+.contact-detail div{text-align:center;}
+.contact-detail .label{font-size:0.7rem;color:var(--text-lt);text-transform:uppercase;letter-spacing:0.05em;}
+.contact-detail .value{font-size:1rem;font-weight:600;color:var(--text-dark);margin-top:0.15rem;}
+
+/* JOB CARDS */
+.job-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem;box-shadow:var(--shadow);transition:all 0.2s;}
+.job-card:hover{box-shadow:var(--shadow-lg);}
+.job-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;}
+.job-species{display:flex;gap:0.3rem;flex-wrap:wrap;}
+.job-species-tag{background:var(--beige-stone);color:var(--text-mid);padding:0.15rem 0.4rem;border-radius:3px;font-size:0.7rem;font-weight:500;}
+.job-region{font-size:0.75rem;color:var(--text-lt);}
+.job-description{font-size:0.8125rem;color:var(--text-mid);margin-bottom:0.5rem;line-height:1.5;}
+.job-meta{display:flex;gap:0.75rem;font-size:0.75rem;color:var(--text-lt);}
+.job-actions{margin-top:0.625rem;display:flex;gap:0.4rem;}
+
+/* SPINNER */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* NOTIFICATIONS */
+.notif-btn{position:relative;background:none;border:1px solid rgba(255,255,255,0.15);color:var(--cream);width:34px;height:34px;border-radius:4px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.notif-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);}
+.notif-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;background:var(--red);color:var(--white);border-radius:50%;font-size:0.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--green-dark);}
+.notif-badge.hidden{display:none;}
+.notif-dropdown{position:absolute;top:3.5rem;right:1rem;width:340px;max-height:420px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:200;display:none;}
+.notif-dropdown.open{display:block;}
+.notif-header{padding:0.75rem 1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.notif-header h3{font-size:0.875rem;}
+.notif-clear{font-size:0.7rem;color:var(--green-mid);cursor:pointer;font-weight:600;background:none;border:none;font-family:inherit;}
+.notif-item{padding:0.75rem 1rem;border-bottom:1px solid var(--cream);cursor:pointer;transition:background 0.15s;}
+.notif-item:hover{background:var(--cream);}
+.notif-item.unread{background:var(--green-soft);border-left:3px solid var(--green-mid);}
+.notif-item .notif-title{font-size:0.8125rem;font-weight:600;margin-bottom:0.15rem;}
+.notif-item .notif-body{font-size:0.75rem;color:var(--text-lt);line-height:1.4;}
+.notif-item .notif-time{font-size:0.65rem;color:var(--text-lt);margin-top:0.25rem;}
+.notif-empty{padding:2rem 1rem;text-align:center;color:var(--text-lt);font-size:0.8125rem;}
+@media(max-width:500px){.notif-dropdown{width:calc(100vw - 2rem);right:0.5rem;}}
+
+/* MAP */
+#jobs-map{height:500px;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:1rem;}
+@media(max-width:640px){#jobs-map{height:350px;}}
+.map-legend{display:flex;flex-wrap:wrap;gap:1rem;padding:0.75rem 1rem;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1rem;font-size:0.75rem;color:var(--text-mid);}
+.legend-item{display:flex;align-items:center;gap:0.375rem;}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .container{padding:1rem 0.875rem;}
+  .card{padding:1.125rem;}
+  .profile-header-bar{flex-direction:column;text-align:center;}
+  .contact-detail{flex-direction:column;gap:0.5rem;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .job-header{flex-direction:column;gap:0.25rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="main-nav">
+  <div class="nav-brand">
+    <div class="nav-logo">TMC</div>
+    <span class="nav-name">The Marksmen Co<span class="nav-sub"> · Hunter Portal</span></span>
+  </div>
+  <div class="nav-links" id="nav-links">
+    <button class="nav-btn" onclick="showPage('gate')">Sign In</button>
+  </div>
+</nav>
+
+<!-- NOTIFICATION DROPDOWN -->
+<div class="notif-dropdown" id="notif-dropdown">
+  <div class="notif-header">
+    <h3>Notifications</h3>
+    <button class="notif-clear" onclick="clearNotifications()">Mark all read</button>
+  </div>
+  <div id="notif-list">
+    <!-- Populated by JS -->
+  </div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div class="page active" id="page-gate">
+  <div class="container container-narrow" style="margin-top:2rem;">
+    <div class="card" style="text-align:center;">
+      <div style="width:56px;height:56px;background:var(--green-soft);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:1.375rem;">🎯</div>
+      <h2 style="font-size:1.25rem;margin-bottom:0.375rem;">Hunter Portal</h2>
+      <p style="color:var(--text-lt);font-size:0.875rem;margin-bottom:1.5rem;">Sign in to access your dashboard, training, and jobs</p>
+      
+      <div class="alert alert-error" id="gate-error" style="display:none;text-align:left;"></div>
+      
+      <div class="fg" style="text-align:left;">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="your@email.com.au">
+      </div>
+      <div class="fg" style="text-align:left;">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Your password">
+      </div>
+      <button class="btn btn-primary btn-full" id="gate-btn" onclick="handleLogin()">Sign In</button>
+      
+      <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">
+        <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.5rem;">Don't have an account?</p>
+        <button class="btn btn-outline btn-full" onclick="showPage('signup')">Create Your TMC Account</button>
+      </div>
+    </div>
+    
+    <div style="text-align:center;margin-top:1rem;">
+      <p style="font-size:0.8125rem;color:var(--text-lt);">Are you a landholder?</p>
+      <a href="/farmer" style="color:var(--green-mid);font-weight:600;font-size:0.8125rem;text-decoration:none;">Go to the Landholder Portal →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HUNTER SIGNUP ===== -->
+<div class="page" id="page-signup">
+  <div class="container container-narrow">
+    <button class="btn btn-outline btn-sm" onclick="showPage('gate')" style="margin-bottom:1rem;">← Back to Sign In</button>
+    <div class="card">
+      <div class="card-header">Create Your TMC Account</div>
+      
+      <div class="alert alert-error" id="signup-error" style="display:none;"></div>
+      
+      <!-- Step 1: AHA Member Number -->
+      <div style="background:var(--gold-bg);border:1px solid var(--gold);border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem;">
+        <p style="font-size:0.8125rem;font-weight:600;color:var(--gold);margin-bottom:0.5rem;">AHA Membership Required</p>
+        <p style="font-size:0.8125rem;color:var(--text-mid);margin-bottom:0.75rem;">You need an Australian Hunting Association member number to create a TMC account. This verifies you are a trained, certified operator.</p>
+        <div class="fg" style="margin-bottom:0.5rem;">
+          <label>AHA Member Number *</label>
+          <input type="text" id="signup-aha" placeholder="e.g. AHA-2026-00001" style="text-align:center;letter-spacing:0.05em;font-size:1rem;">
+        </div>
+        <div id="aha-verify-result"></div>
+        <button class="btn btn-gold btn-full btn-sm" onclick="verifyAHASignup()">Verify Member Number</button>
+        <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--gold);">
+          <p style="font-size:0.75rem;color:var(--text-lt);">Don't have a member number? <a href="https://australianhuntingassociation.com.au" target="_blank" style="color:var(--gold);font-weight:600;">Join AHA — $198/year →</a></p>
+        </div>
+      </div>
+
+      <!-- Step 2: Your Details (disabled until AHA verified) -->
+      <fieldset id="signup-details-section" disabled style="border:none;padding:0;margin:0;opacity:0.4;">
+        <div class="form-row">
+          <div class="fg"><label>First Name *</label><input type="text" id="signup-first" placeholder="John"></div>
+          <div class="fg"><label>Last Name *</label><input type="text" id="signup-last" placeholder="Smith"></div>
+        </div>
+        <div class="fg"><label>Email *</label><input type="email" id="signup-email" placeholder="your@email.com.au"></div>
+        <div class="fg"><label>Phone *</label><input type="tel" id="signup-phone" placeholder="04XX XXX XXX"></div>
+        <div class="form-row">
+          <div class="fg"><label>Location *</label><input type="text" id="signup-location" placeholder="e.g. Northam, WA"></div>
+          <div class="fg"><label>State *</label><select id="signup-state"><option value="">Select</option><option>WA</option><option>NSW</option><option>VIC</option><option>QLD</option><option>SA</option><option>TAS</option><option>NT</option><option>ACT</option></select></div>
+        </div>
+
+        <!-- Step 3: Create Password -->
+        <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);">
+          <div class="fg"><label>Create Password *</label><input type="password" id="signup-password" placeholder="At least 8 characters"></div>
+          <div class="fg"><label>Confirm Password *</label><input type="password" id="signup-password-confirm" placeholder="Re-enter password"></div>
+        </div>
+
+        <button class="btn btn-primary btn-full" onclick="hunterSignup()">Create Account & Enter Portal →</button>
+      </fieldset>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="page" id="page-dashboard">
+  <div class="container container-wide">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.5rem;">
+      <div>
+        <h1 style="font-size:1.25rem;">Welcome, <span id="dash-name">Member</span></h1>
+        <p style="color:var(--text-lt);font-size:0.8125rem;" id="dash-status">AHA Member</p>
+      </div>
+      <div style="display:flex;gap:0.4rem;">
+        <button class="btn btn-outline btn-sm" onclick="showPage('profile-builder')">Edit Profile</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number" id="stat-training">0/6</div><div class="stat-label">Training</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-handbook" style="font-size:0.875rem;color:var(--text-lt);">—</div><div class="stat-label">Handbook</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-shooting">—</div><div class="stat-label">Shooting</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-profile" style="font-size:0.875rem;color:var(--gold);">Incomplete</div><div class="stat-label">Profile</div></div>
+    </div>
+
+    <!-- Certification Progress -->
+    <div class="card">
+      <div class="card-header">Your Certification Progress</div>
+      <div id="cert-progress-section">
+        <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-lt);margin-bottom:0.375rem;">
+          <span>Foundation Training</span>
+          <span id="progress-label">0 of 6 modules complete</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%;"></div></div>
+
+        <div class="module-list" id="module-list">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Marksmanship Handbook -->
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">
+          <div id="handbook-section">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+              <div>
+                <h3 style="font-size:0.9375rem;">📖 Marksmanship Handbook</h3>
+                <p style="font-size:0.75rem;color:var(--text-lt);" id="handbook-status-text">Complete all training modules first</p>
+              </div>
+              <button class="btn btn-outline btn-sm" id="handbook-btn" disabled onclick="showPage('handbook')">Download →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shooting Qualification -->
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h3 style="font-size:0.9375rem;">🎯 Shooting Qualification</h3>
+              <p style="font-size:0.75rem;color:var(--text-lt);" id="shooting-status-text">Complete the Marksmanship Handbook first</p>
+            </div>
+            <button class="btn btn-outline btn-sm" id="shooting-btn" disabled onclick="showPage('shooting')">Submit →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Certified state -->
+      <div id="cert-complete-section" style="display:none;">
+        <div class="alert alert-success" style="margin-bottom:0;">
+          <strong>AHA Certified</strong><br>
+          Certificate: <span id="cert-number-display"></span><br>
+          Your profile is live on The Marksmen Co platform.
+        </div>
+      </div>
+    </div>
+
+    <!-- Jobs Board -->
+    <div class="card">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Jobs Board</span>
+        <button class="btn btn-outline btn-sm" onclick="showPage('map')">🗺 Full Map →</button>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab(this,'tab-available')">Available (<span id="jobs-available-count">3</span>)</button>
+        <button class="tab" onclick="switchTab(this,'tab-interested')">Interested (<span id="jobs-interested-count">0</span>)</button>
+        <button class="tab" onclick="switchTab(this,'tab-selected')">Selected (<span id="jobs-selected-count">0</span>)</button>
+      </div>
+
+      <div class="tab-content active" id="tab-available">
+        <div class="job-card" style="border-left:3px solid var(--success);">
+          <div class="job-header"><div class="job-species"><span class="job-species-tag">Red fox</span><span class="job-species-tag">European rabbit</span></div><span style="font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:3px;background:var(--success);color:var(--white);font-weight:600;">NEW</span></div>
+          <div style="font-size:0.75rem;color:var(--text-lt);margin-bottom:0.375rem;">📍 Toodyay, WA</div>
+          <div class="job-description">Significant fox pressure around lambing paddocks, also rabbits in the eastern boundary. Mostly open country with some scrub along the creek line. Night work preferred.</div>
+          <div class="job-meta"><span>⏱ Within 2 weeks</span><span>Posted 2 days ago</span></div>
+          <div class="job-actions"><button class="btn btn-gold btn-sm" onclick="expressInterest(this)">I'm Interested</button><button class="btn btn-outline btn-sm">View Details</button></div>
+        </div>
+        <div class="job-card" style="border-left:3px solid var(--success);">
+          <div class="job-header"><div class="job-species"><span class="job-species-tag">Feral pig</span></div><span style="font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:3px;background:var(--success);color:var(--white);font-weight:600;">NEW</span></div>
+          <div style="font-size:0.75rem;color:var(--text-lt);margin-bottom:0.375rem;">📍 Moora, WA</div>
+          <div class="job-description">Pigs coming in from the creek line and destroying fencing and water troughs. Need someone comfortable with pig work in thick country.</div>
+          <div class="job-meta"><span>⏱ Within a month</span><span>Posted 5 days ago</span></div>
+          <div class="job-actions"><button class="btn btn-gold btn-sm" onclick="expressInterest(this)">I'm Interested</button><button class="btn btn-outline btn-sm">View Details</button></div>
+        </div>
+        <div class="job-card">
+          <div class="job-header"><div class="job-species"><span class="job-species-tag">Red fox</span></div><span class="job-region">📍 York, WA</span></div>
+          <div class="job-description">Foxes taking lambs in the south paddock. Open country, good vehicle access.</div>
+          <div class="job-meta"><span>⏱ Flexible</span><span>Posted 1 week ago</span></div>
+          <div class="job-actions"><button class="btn btn-gold btn-sm" onclick="expressInterest(this)">I'm Interested</button><button class="btn btn-outline btn-sm">View Details</button></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-interested">
+        <p style="text-align:center;color:var(--text-lt);padding:2rem 0;font-size:0.875rem;">No jobs you've expressed interest in yet.</p>
+      </div>
+
+      <div class="tab-content" id="tab-selected">
+        <p style="text-align:center;color:var(--text-lt);padding:2rem 0;font-size:0.875rem;">No selections yet. When a farmer selects you, their contact details will appear here.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TRAINING MODULE VIEW ===== -->
+<div class="page" id="page-training">
+  <div class="container">
+    <button class="btn btn-outline btn-sm" onclick="showPage('dashboard')" style="margin-bottom:1rem;">← Back to Dashboard</button>
+    <div class="card">
+      <div class="card-header" id="training-module-title">Module 1: Professional Pest Management</div>
+      <div id="training-module-content" style="font-size:0.9rem;color:var(--text-mid);line-height:1.7;">
+        <!-- Module content populated by JS -->
+      </div>
+      <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+        <h3 style="font-size:0.9375rem;margin-bottom:0.25rem;">Module Quiz</h3>
+        <p style="font-size:0.75rem;color:var(--text-lt);margin-bottom:0.75rem;">You need at least 8 out of 10 correct to pass. You can retake the quiz as many times as needed.</p>
+        <div id="training-quiz">
+          <!-- Quiz populated by JS -->
+        </div>
+        <div id="quiz-result" style="display:none;margin-bottom:0.75rem;"></div>
+        <button class="btn btn-primary btn-full" id="quiz-submit-btn" onclick="submitQuiz()" style="margin-top:1rem;">Submit Quiz</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MARKSMANSHIP HANDBOOK ===== -->
+<div class="page" id="page-handbook">
+  <div class="container" style="max-width:560px;">
+    <button class="btn btn-outline btn-sm" onclick="showPage('dashboard')" style="margin-bottom:1rem;">← Back to Dashboard</button>
+    
+    <div class="card" style="text-align:center;">
+      <div style="width:56px;height:56px;background:var(--gold-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:1.5rem;">📖</div>
+      <h2 style="font-size:1.25rem;margin-bottom:0.375rem;">AHA Marksmanship Handbook</h2>
+      <p style="color:var(--text-lt);font-size:0.875rem;margin-bottom:1.5rem;">Before you attempt your shooting qualification, download and read this handbook. It covers the practical shooting principles that will help you meet the AHA standard. Take it with you to the range.</p>
+
+      <div style="background:var(--cream);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;text-align:left;">
+        <p style="font-size:0.8125rem;color:var(--text-mid);margin-bottom:0.75rem;"><strong>What's inside:</strong></p>
+        <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.25rem;">→ The Five Fundamentals — Aiming, Breath Control, Hold, Trigger, Follow Through</p>
+        <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.25rem;">→ Firing Positions — Prone, Sitting, Kneeling, Standing</p>
+        <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.25rem;">→ The B.R.A.S.S. Method — your shot sequence for every round</p>
+        <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.25rem;">→ Field Marksmanship — zeroing, shot placement, wind, rests</p>
+        <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.25rem;">→ Shotgun Techniques — swing-through and sustained lead</p>
+        <p style="font-size:0.8125rem;color:var(--text-lt);">→ Your AHA Standard — 5 shots, 75mm, 100 metres</p>
+      </div>
+
+      <a href="https://australianhuntingassociation.com.au/aha-marksmanship-handbook.pdf" target="_blank" class="btn btn-primary btn-full" style="text-decoration:none;margin-bottom:1rem;" onclick="downloadHandbook()">📄 Download Handbook (PDF)</a>
+      
+      <div class="alert alert-info" style="text-align:left;margin-bottom:0;">
+        <strong>Your shooting standard:</strong> 5 shots within 75mm at 100 metres. Once you've read the handbook and completed your shoot, come back here and upload your results.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SHOOTING QUALIFICATION ===== -->
+<div class="page" id="page-shooting">
+  <div class="container">
+    <button class="btn btn-outline btn-sm" onclick="showPage('dashboard')" style="margin-bottom:1rem;">← Back to Dashboard</button>
+    <div class="card">
+      <div class="card-header">Shooting Proficiency Qualification</div>
+      <p style="font-size:0.875rem;color:var(--text-mid);margin-bottom:1rem;">Demonstrate your shooting proficiency: 5 shots within a 75mm grouping at 100 metres. Choose one of the two pathways below.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+        <div class="card" style="border:2px solid var(--green-mid);margin-bottom:0;">
+          <h3 style="font-size:0.875rem;margin-bottom:0.5rem;">Option 1 — Range Shoot</h3>
+          <p style="font-size:0.8rem;color:var(--text-lt);">Visit any shooting range. Shoot 5 rounds at 100m. Photograph your target and upload below.</p>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <h3 style="font-size:0.875rem;margin-bottom:0.5rem;">Option 2 — Virtual-Shot</h3>
+          <p style="font-size:0.8rem;color:var(--text-lt);">Use a Virtual-Shot dry-fire simulator. Submit your results below.</p>
+          <a href="https://virtual-shot.com/" target="_blank" style="font-size:0.75rem;color:var(--green-mid);font-weight:600;">virtual-shot.com →</a>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>Upload your target photo or Virtual-Shot results</label>
+        <div class="file-upload" onclick="document.getElementById('shooting-file').click()">
+          📄 Click to upload or drag and drop<br>
+          <span style="font-size:0.7rem;">JPEG, PNG, or PDF — max 10MB</span>
+        </div>
+        <input type="file" id="shooting-file" style="display:none;" accept=".jpg,.jpeg,.png,.pdf" onchange="shootingFileSelected(this)">
+        <p id="shooting-file-name" style="font-size:0.8rem;color:var(--green-mid);margin-top:0.375rem;display:none;"></p>
+      </div>
+      <div class="fg">
+        <label>Notes (optional)</label>
+        <textarea placeholder="e.g. Range name, distance confirmed, date of shoot..." style="min-height:60px;"></textarea>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="submitShooting()">Submit for Review</button>
+      <p style="font-size:0.75rem;color:var(--text-lt);margin-top:0.75rem;text-align:center;">Submissions are reviewed within 5 business days.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== JOBS MAP ===== -->
+<div class="page" id="page-map">
+  <div class="container container-wide">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div>
+        <h1 style="font-size:1.25rem;margin-bottom:0.15rem;">Jobs Map</h1>
+        <p style="color:var(--text-lt);font-size:0.8125rem;">Active pest management jobs across Australia</p>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="showPage('dashboard')">← Dashboard</button>
+    </div>
+    
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#27ae60;"></div>Open — accepting interest</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2980b9;"></div>Active — hunters have applied</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e67e22;"></div>National — open to all (7+ days)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c0392b;"></div>Filled — selected (disappears in 3 days)</div>
+    </div>
+    
+    <div id="jobs-map"></div>
+    
+    <div id="map-job-detail" style="display:none;">
+      <div class="card" id="map-job-card">
+        <!-- Populated by clicking a pin -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROFILE BUILDER ===== -->
+<div class="page" id="page-profile-builder">
+  <div class="container">
+    <button class="btn btn-outline btn-sm" onclick="showPage('dashboard')" style="margin-bottom:1rem;">← Back to Dashboard</button>
+    <h1 style="font-size:1.375rem;margin-bottom:0.375rem;">Build your profile</h1>
+    <p style="color:var(--text-lt);margin-bottom:1.25rem;font-size:0.875rem;">This is what farmers will see when deciding who to work with.</p>
+
+    <!-- AHA Membership -->
+    <div class="card" style="border-left:3px solid var(--success);">
+      <div class="card-header">AHA Membership <span class="status status-active" style="margin-left:0.5rem;">Verified</span></div>
+      <div class="form-row">
+        <div class="fg"><label>AHA Member Number</label><input type="text" id="profile-aha-number" readonly style="background:var(--cream);font-weight:600;letter-spacing:0.03em;"></div>
+        <div class="fg"><label>Membership Status</label><input type="text" value="Active" readonly style="background:var(--success-bg);color:var(--success);font-weight:600;"></div>
+      </div>
+    </div>
+
+    <!-- Licence upload -->
+    <div class="card">
+      <div class="card-header">Firearms Licence <span style="font-weight:400;font-size:0.75rem;color:var(--text-lt);">(admin-only, never shown to farmers)</span></div>
+      <div class="form-row">
+        <div class="fg"><label>Licence number *</label><input type="text" placeholder="Enter your licence number"></div>
+        <div class="fg"><label>State of issue *</label><select><option value="">Select</option><option>WA</option><option>NSW</option><option>VIC</option><option>QLD</option><option>SA</option><option>TAS</option><option>NT</option><option>ACT</option></select></div>
+      </div>
+      <div class="fg"><label>Licence expiry date *</label><input type="date"></div>
+      <div class="fg"><label>Photo of licence *</label><div class="file-upload" onclick="document.getElementById('licence-file').click()">📄 Click to upload your firearms licence — JPEG, PNG, or PDF</div><input type="file" id="licence-file" style="display:none;" accept=".jpg,.jpeg,.png,.pdf" onchange="licenceFileSelected(this)"><p id="licence-file-name" style="font-size:0.8rem;color:var(--green-mid);margin-top:0.375rem;display:none;"></p></div>
+    </div>
+
+    <!-- Basic info -->
+    <div class="card">
+      <div class="card-header">Your details</div>
+      <div style="display:flex;gap:1.25rem;align-items:flex-start;flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div style="width:80px;height:80px;border-radius:50%;background:var(--beige-stone);display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px dashed var(--border);">
+            <span style="font-size:0.7rem;color:var(--text-lt);">Upload<br>photo</span>
+          </div>
+        </div>
+        <div style="flex:1;min-width:200px;">
+          <div class="fg"><label>Display name *</label><input type="text" placeholder="How you want to appear"></div>
+          <div class="fg"><label>Location *</label><input type="text" placeholder="e.g. Northam, WA"></div>
+          <div class="fg"><label>Service radius *</label><select><option value="">Select</option><option>200 km</option><option>400 km</option><option>600 km</option><option>800 km</option><option>1000 km</option></select></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bio -->
+    <div class="card">
+      <div class="card-header">About you</div>
+      <div class="fg"><label>Bio *</label><p class="hint">Write in plain English. Where you're based, how long you've been doing this, what kind of country you're comfortable in.</p><textarea placeholder="I've been doing pest management work in the central wheatbelt for about five years, mostly foxes and rabbits..."></textarea></div>
+    </div>
+
+    <!-- Species -->
+    <div class="card">
+      <div class="card-header">Species capability</div>
+      <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.75rem;">Select the species you can target. Calibre bands are set by AHA.</p>
+      <div class="species-list">
+        <label class="species-row" onclick="toggleSpecies(this)"><input type="checkbox"><div><div class="species-name">Red fox</div><div class="species-calibre">Rifle: .222 Rem – .243 Win · Shotgun: 20ga – 12ga</div></div></label>
+        <label class="species-row" onclick="toggleSpecies(this)"><input type="checkbox"><div><div class="species-name">Feral pig</div><div class="species-calibre">Rifle: .243 Win – .308 Win+</div></div></label>
+        <label class="species-row" onclick="toggleSpecies(this)"><input type="checkbox"><div><div class="species-name">European rabbit</div><div class="species-calibre">Rifle: .17 HMR – .223 Rem · Shotgun: .410 – 12ga</div></div></label>
+        <label class="species-row" onclick="toggleSpecies(this)"><input type="checkbox"><div><div class="species-name">Feral goat</div><div class="species-calibre">Rifle: .243 Win – .308 Win</div></div></label>
+        <label class="species-row" onclick="toggleSpecies(this)"><input type="checkbox"><div><div class="species-name">Feral deer</div><div class="species-calibre">Rifle: .243 Win – .300 Win Mag · Shotgun: 12ga (slugs)</div></div></label>
+        <label class="species-row" onclick="toggleSpecies(this)"><input type="checkbox"><div><div class="species-name">Feral cat</div><div class="species-calibre">Rifle: .22 LR – .223 Rem · Shotgun: .410 – 20ga</div></div></label>
+        <label class="species-row" onclick="toggleSpecies(this)"><input type="checkbox"><div><div class="species-name">Wild dogs / dingoes</div><div class="species-calibre">Rifle: .243 Win – .308 Win · Shotgun: 12ga</div></div></label>
+        <label class="species-row" onclick="toggleSpecies(this)"><input type="checkbox" onchange="togglePermitWarning()"><div><div class="species-name">Kangaroos</div><div class="species-calibre">Rifle: .243 Win – .308 Win (head shot per RSPCA Code)</div></div></label>
+        <label class="species-row" onclick="toggleSpecies(this)"><input type="checkbox" onchange="togglePermitWarning()"><div><div class="species-name">Emus</div><div class="species-calibre">Rifle: .243 Win – .308 Win · Shotgun: 12ga</div></div></label>
+      </div>
+      <div class="permit-warning" id="permit-warning">I understand that tags or permits may be required for kangaroos and emus depending on the region and jurisdiction. I will verify the regulatory requirements with the landholder before any engagement involving these species.</div>
+    </div>
+
+    <!-- Optional -->
+    <div class="card">
+      <div class="card-header">Additional <span style="font-weight:400;font-size:0.75rem;color:var(--text-lt);">(optional)</span></div>
+      <div class="fg"><label>Availability</label><select><option>Available</option><option>Limited availability</option><option>Not currently available</option></select></div>
+      <div class="fg"><label>Public liability insurance</label><select><option value="">Select</option><option>Individual policy</option><option>SSAA</option><option>None declared</option></select></div>
+      <div class="fg"><label>Additional notes</label><textarea placeholder="Anything else farmers should know (optional)" style="min-height:60px;"></textarea></div>
+    </div>
+
+    <!-- Contact -->
+    <div class="card">
+      <div class="card-header">Contact details</div>
+      <div class="alert alert-info">Your contact details are <strong>never displayed</strong> on your public profile. They are only released when a farmer selects you for a job.</div>
+      <div class="fg"><label>Mobile phone *</label><input type="tel" id="profile-phone" placeholder="Confirm your mobile number"></div>
+      <div class="fg"><label>Email *</label><input type="email" id="profile-email" placeholder="Confirm your email"></div>
+    </div>
+
+    <div style="display:flex;gap:0.625rem;justify-content:flex-end;margin-top:0.5rem;">
+      <button class="btn btn-secondary" onclick="showPage('preview')">Preview Profile</button>
+      <button class="btn btn-primary" onclick="submitProfile()">Submit for Review →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROFILE PREVIEW ===== -->
+<div class="page" id="page-preview">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <h1 style="font-size:1.125rem;">Profile Preview</h1>
+      <button class="btn btn-outline btn-sm" onclick="showPage('profile-builder')">← Edit</button>
+    </div>
+    <p style="color:var(--text-lt);font-size:0.8125rem;margin-bottom:1rem;">This is how farmers will see your profile on The Marksmen Co.</p>
+    <div class="profile-preview">
+      <div class="profile-header-bar">
+        <div class="profile-avatar" id="preview-initials">DM</div>
+        <div class="profile-header-text"><h2 id="preview-name">Dave Mynott</h2><div class="profile-location" id="preview-location">📍 Northam, WA · Radius: 400km</div></div>
+      </div>
+      <div class="profile-body">
+        <div class="profile-badges"><span class="badge badge-certified">✓ AHA Certified</span><span class="badge badge-insured">Individual Policy</span><span class="badge badge-available">Available</span></div>
+        <div class="profile-bio" id="preview-bio">I've been doing pest management work in the central wheatbelt for about five years, mostly foxes and rabbits with some pig work in scrub country further east.</div>
+        <table class="species-table"><thead><tr><th>Species</th><th>Calibre / Gauge Range</th></tr></thead><tbody id="preview-species"><tr><td>Red fox</td><td>Rifle: .222 – .243 · Shotgun: 20ga – 12ga</td></tr><tr><td>European rabbit</td><td>Rifle: .17 HMR – .223 · Shotgun: .410 – 12ga</td></tr><tr><td>Feral pig</td><td>Rifle: .243 – .308+</td></tr></tbody></table>
+      </div>
+    </div>
+    <div style="display:flex;gap:0.625rem;justify-content:flex-end;margin-top:1rem;">
+      <button class="btn btn-secondary" onclick="showPage('profile-builder')">← Edit</button>
+      <button class="btn btn-primary" onclick="submitProfile()">Submit for Review →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================================================
+// SUPABASE CONFIG — REPLACE WITH YOUR VALUES
+// =====================================================
+const SUPABASE_URL = 'https://muqnduayrkuoxemmhqgr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11cW5kdWF5cmt1b3hlbW1ocWdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NDY1ODgsImV4cCI6MjA4MzUyMjU4OH0.jMmr_R56Pg21hjU53i7w2eAr-nAjP9oSnXTS4pK9gg0';
+
+// =====================================================
+// STATE
+// =====================================================
+let currentMember = null;
+let currentModule = 0;
+let completedModules = [];
+let handbookComplete = false;
+
+// AHA Foundation Course — Complete Module Content and Quizzes
+// 6 modules, 10 questions each, 80% pass rate (8/10)
+
+const MODULES = [
+  {
+    id: 1,
+    title: "The Professional Pest Management Hunter",
+    desc: "Identity, framing, and what farmers value",
+    content: `<h3>What this module is about</h3>
+<p>This module is not about firearms, species, or law. Those come later. This module is about what kind of person you are agreeing to become when you sign up to operate as an AHA member through The Marksmen Co platform.</p>
+<p>Most people who arrive at this course already know how to handle a rifle and have some experience hunting. Foundation takes that existing competence and builds a professional framework around it — a way of operating that meets the expectations farmers have when they trust someone onto their property.</p>
+
+<h3>Who you are when you're on a property</h3>
+<p>When you walk onto a farmer's property as an AHA member, you are there because the farmer identified a problem, expressed a need for assistance, and chose to invite you specifically. The farmer is the principal. You are there at their invitation, under their authority, and within the scope of what they have asked you to do.</p>
+<p>This is a different frame from recreational hunting, and it takes adjustment. On a property as an AHA member, you are not the protagonist — the farmer is. Your job is to make their problem smaller, quietly and competently, and then leave.</p>
+<p><strong>The useful mental frame: you are a guest, and you are here under authority that you do not own.</strong> Every decision on the property gets checked against that frame. Would a guest wander into that paddock without asking? Would a guest leave a gate open behind them? Would a guest take a shot they hadn't cleared with the farmer? The answers are obvious.</p>
+
+<h3>Chosen once, asked back</h3>
+<p>There is a useful distinction between being chosen once and being asked back. Plenty of hunters get chosen once. What separates a long career from a short one is whether the farmer asks them back — and recommends them to other farmers.</p>
+<p>Being asked back comes down to the boring fundamentals: you showed up when you said you would, you communicated clearly before, during, and after the visit, you operated safely in a way the farmer noticed, you took the species you said you'd take and didn't take anything else, you left the property the way you found it, and you handled any problems honestly.</p>
+<p>What isn't on that list: how many animals you took, what equipment you carried, how impressive your shooting was. A hunter who takes three foxes but does everything else right will get asked back; a hunter who takes ten foxes but leaves a gate open will not.</p>
+
+<h3>What farmers value</h3>
+<p>Farmers are not looking for the most experienced hunter. They are looking for someone they can trust to be on their property without creating a problem. What farmers actually value, in approximate order:</p>
+<p>1. <strong>Reliability</strong> — you answer messages, show up on time, do what you said you'd do<br>
+2. <strong>Communication</strong> — before, during, and after the visit, without having to be chased<br>
+3. <strong>Safety conduct</strong> — how you handle a firearm, visible from the first thirty seconds<br>
+4. <strong>Species discipline</strong> — you take what you were asked to take, nothing else<br>
+5. <strong>Property care</strong> — gates, fences, tracks, stock, all left as you found them<br>
+6. <strong>Honesty when something goes wrong</strong> — immediate, direct, responsible</p>
+
+<h3>The three things you carry</h3>
+<p>Every time you walk onto a farmer's property, you are carrying three things that all matter more than your rifle:</p>
+<p><strong>Your firearms licence.</strong> The legal authority to be there with a firearm at all.</p>
+<p><strong>The standards of the Australian Hunting Association.</strong> What makes you different from any unaffiliated hunter.</p>
+<p><strong>Your reputation.</strong> The cumulative result of every interaction you've had with every farmer you've worked for.</p>
+
+<h3>The AHA standard</h3>
+<p>An AHA member is a licensed Australian hunter who operates to a published professional standard, communicates clearly and honestly, treats farmers with respect, handles firearms safely, dispatches pest species humanely, and is accountable to a body that will hold them to those standards.</p>
+<p>This is not aspiration. It is expected baseline behaviour for every AHA member, every time.</p>`,
+    quiz: [
+      { q: "Which of the following best describes the role of an AHA member when on a farmer's property?", options: ["An expert hunter exercising a hobby on private land", "A guest under the farmer's authority, providing a professional service in response to a problem the farmer identified", "A contractor hired to deliver a specific outcome", "A member of the public exercising a recreational right"], answer: 1 },
+      { q: "What is the difference between being 'chosen once' and being 'asked back'?", options: ["There is no meaningful difference", "Being chosen once is luck; being asked back is the cumulative result of operating professionally", "Being chosen once means a paid job; being asked back means an unpaid one", "Being asked back depends on the number of animals you took"], answer: 1 },
+      { q: "What is the most important factor in whether a farmer asks an AHA member back?", options: ["The number of animals taken on the first visit", "The hunter's equipment", "Reliability, communication, safety conduct, species discipline, property care, and honesty", "The hunter's experience level"], answer: 2 },
+      { q: "A farmer has noticed a hunter handling a firearm carelessly between the vehicle and the activity area, but has not said anything. What is the likely consequence?", options: ["Nothing — the farmer didn't say anything", "The farmer has formed an opinion in the first thirty seconds that will affect the entire relationship", "The farmer will give a warning", "The farmer will report the hunter immediately"], answer: 1 },
+      { q: "What are the 'three things you carry' onto a farmer's property?", options: ["Your rifle, your ammunition, and your knife", "Your firearms licence, the standards of AHA, and your reputation", "Your phone, your map, and your first aid kit", "Your AHA membership card, insurance certificate, and training record"], answer: 1 },
+      { q: "A farmer asks you to deal with foxes. While there, you spot a feral pig you weren't authorised to engage. What is the correct action?", options: ["Take the pig — it's a pest species", "Don't take the pig, but mention it later in the day", "Don't take the pig — you weren't authorised. Mention it in your next communication so the farmer can decide", "Take the pig and apologise afterwards"], answer: 2 },
+      { q: "Why is professionalism described as more important than shooting ability?", options: ["Because shooting ability doesn't matter", "Because the work itself is the easy part — the professionalism around it determines whether the hunter is trusted and asked back", "Because farmers are not interested in shooting", "Because professionalism is easier to teach"], answer: 1 },
+      { q: "A round has gone somewhere unexpected and you're not certain where. What is the correct action?", options: ["Don't say anything and hope nothing comes of it", "Wait until the end of the day and mention it casually", "Stop, assess what may have happened, and inform the farmer immediately", "Try to find the round before saying anything"], answer: 2 },
+      { q: "What is the simplest definition of the AHA standard?", options: ["A hunter who has paid a membership fee", "A licensed Australian hunter who operates to a published professional standard, communicates honestly, handles firearms safely, dispatches humanely, and is accountable", "A hunter who has completed a training course", "A hunter who carries insurance"], answer: 1 },
+      { q: "What is the role of the Foundation course in the AHA system?", options: ["An optional add-on for extra training", "The entry-level training standard producing the Foundation-Trained badge on your profile", "A course on advanced shooting techniques", "A marketing document"], answer: 1 }
+    ]
+  },
+  {
+    id: 2,
+    title: "Working With Farmers",
+    desc: "Communication and the rhythm of a visit",
+    content: `<h3>What this module is about</h3>
+<p>This module covers the communication and procedural discipline around a visit to a farmer's property — the part most new AHA members underestimate. The hard part of this work is not the shooting. It's the small repeated habits that turn a one-off introduction into an ongoing professional relationship.</p>
+
+<h3>First contact</h3>
+<p>The first message a farmer ever receives from you determines whether the relationship gets off the ground. Most farmers form an opinion within the first two or three sentences.</p>
+<p>Principles for a first response: Read the request carefully — mention something specific from it. Be direct — if you can do the job, say so and offer a window. Don't oversell — set a realistic expectation and beat it. Keep it short — three or four sentences.</p>
+
+<h3>Pre-visit information checklist</h3>
+<p>Before the visit, you need: property location and access, species in scope, areas in and out of scope, stock locations and movements, other people on the property, times of day that work, carcass handling preference, and any specific instructions or restrictions.</p>
+
+<h3>The confirmatory message</h3>
+<p>This is the single most important communication habit in this work. A confirmatory message is a brief written summary sent to the farmer a few hours before the visit, confirming the agreed plan in your own words.</p>
+<p>Example: <em>"Hi Mark, just confirming I'm planning to come out to the property tomorrow afternoon, arriving around 4pm. I'll focus on foxes in the eastern paddocks like we discussed, leaving the western boundary alone where the cattle are. I'll send you a message when I'm leaving and another when I'm done. Anything else I should know? Cheers, Dave."</em></p>
+
+<h3>Left and right of arc</h3>
+<p>Borrowed from Defence vocabulary — the boundaries of your area of operation. Before any activity, you need to know which paddocks are in scope, which directions you can and cannot engage in, where the farmer's house and sheds are, and where stock are at all times.</p>
+
+<h3>In-visit communication</h3>
+<p>The minimum standard: a short message when you arrive, a message if anything significant changes, and a message immediately if anything goes wrong.</p>
+
+<h3>The end-of-visit message</h3>
+<p>Short, factual, out within thirty minutes of leaving. Contains: that you're done and off the property, what was achieved, anything notable you observed, anything that didn't go to plan, and a thank you.</p>
+
+<h3>The day-after debrief</h3>
+<p>A short message the morning after. Shows the farmer you're still thinking about their property, opens the door for follow-up, and puts you at the top of their mind next time.</p>
+
+<h3>Handling mistakes</h3>
+<p>Every operator makes mistakes. The correct pattern: tell the farmer immediately, state what happened plainly, offer to fix it where possible, and take responsibility without excuses. Farmers are remarkably forgiving of mistakes handled this way, and remarkably unforgiving of mistakes that are hidden or minimised.</p>`,
+    quiz: [
+      { q: "Most farmers form an opinion about a new hunter based on what?", options: ["The number of years of experience", "The first few sentences of the hunter's first response", "The hunter's equipment", "The hunter's qualifications"], answer: 1 },
+      { q: "What is a confirmatory message?", options: ["A formal contract sent before the visit", "A short message sent a few hours before, summarising the agreed plan in the hunter's own words", "A message sent during the visit to confirm shots taken", "An invoice sent after the visit"], answer: 1 },
+      { q: "What does 'left and right of arc' mean in this context?", options: ["The direction the wind is blowing", "The boundaries of the area of operation — what's in scope and what's out", "The angle of the sun", "The direction of the next paddock"], answer: 1 },
+      { q: "When should an end-of-visit message be sent?", options: ["The next morning", "Within thirty minutes of leaving the property", "Whenever the hunter remembers", "Only if the visit was successful"], answer: 1 },
+      { q: "What is the day-after debrief?", options: ["A formal report submitted to AHA", "A short follow-up message sent the morning after, checking in and opening the door for follow-up", "A debriefing meeting at AHA headquarters", "A required incident report"], answer: 1 },
+      { q: "A hunter accidentally closed a gate that should have been left open. What is the correct response?", options: ["Don't mention it — no way to know if it caused a problem", "Mention it casually in the next conversation", "Tell the farmer immediately, state plainly what happened, offer to help, and take responsibility", "Wait until the day-after debrief"], answer: 2 },
+      { q: "Which of the following is NOT on the pre-visit information checklist?", options: ["Property location and access", "Stock locations and movements", "The hunter's preferred ammunition brand", "Carcass handling preference"], answer: 2 },
+      { q: "What is the purpose of the mental checklist before leaving a property?", options: ["To make sure you have all your gear", "To confirm gates, tracks, carcasses, equipment, vehicle, and rifle are all handled correctly", "To count animals taken", "To plan the next visit"], answer: 1 },
+      { q: "Which is most likely to damage a farmer relationship beyond repair?", options: ["Taking fewer animals than hoped", "Leaving a gate in the wrong state or any action that makes the farmer feel they've lost control", "Wearing the wrong clothing", "Arriving slightly late"], answer: 1 },
+      { q: "Why is the rhythm of communication (before, during, after) important?", options: ["Because farmers like receiving messages", "Because it builds the trust that gets a hunter asked back and recommended", "Because it is required by AHA rules", "Because it provides a paper trail"], answer: 1 }
+    ]
+  },
+  {
+    id: 3,
+    title: "Firearms Safety in the Working Environment",
+    desc: "Principles, action states, standing orders, and drills",
+    content: `<h3>What this module is about</h3>
+<p>This module is the bridge between what you already know as a licensed shooter and what a professional pest management hunter actually practises in the field. Firearms safety on a working property is not the same discipline as firearms safety on a range. The environment is different, the margins for error are smaller, and the consequences of a mistake are more severe.</p>
+
+<h3>The three principles</h3>
+<p><strong>Principle one:</strong> Treat every firearm as if it is loaded, every time, without exception. This is a mental state, not a reminder to check.</p>
+<p><strong>Principle two:</strong> Your muzzle is under your absolute control, at all times, and is never pointed at anything you are not prepared to destroy. On a farm there is no defined safe direction — every direction contains something.</p>
+<p><strong>Principle three:</strong> Your finger stays off the trigger and outside the trigger guard until you have positively identified your target, confirmed your shot clearance, and committed to the shot. The trigger finger is the last safety a firearm has — the one that cannot fail as long as you control it.</p>
+
+<h3>Action states</h3>
+<p><strong>Action state zero — unloaded and made safe.</strong> Magazine out, chamber empty, action open, safety applied. The state in transport and whenever not actively engaged.</p>
+<p><strong>Action state one — loaded and made safe.</strong> Magazine fitted, chamber empty, action closed, safety applied. Moving through the area of operation but not actively engaging.</p>
+<p><strong>Action state two — loaded and ready.</strong> Magazine fitted, chamber loaded, action closed, safety applied, muzzle oriented toward engagement area, finger off trigger. Actively working a target area.</p>
+<p><strong>Action state three — engaging.</strong> Safety off, finger on trigger, target identified, clearance confirmed, committing to the shot. Only for the few seconds surrounding the shot.</p>
+
+<h3>The four clearance questions — before every shot</h3>
+<p>1. Am I certain of my target?<br>
+2. Am I certain of what is beyond my target?<br>
+3. Am I certain of my backstop?<br>
+4. If this shot missed or deflected, where would it end up?</p>
+<p>If any one question cannot be answered with certainty, the shot does not happen.</p>
+
+<h3>Standing orders</h3>
+<p><strong>Standing order one:</strong> Before every shot, apply the four clearance questions.</p>
+<p><strong>Standing order two:</strong> Minimum distance from stock, houses, roads, and structures is further than you think. If you can see a farm building, you are too close to shoot toward it.</p>
+<p><strong>Standing order three:</strong> You do not engage through, across, or near livestock. Ever.</p>
+<p><strong>Standing order four:</strong> You do not take shots you cannot clearly see and identify.</p>
+<p><strong>Standing order five:</strong> After every shot, you return to action state one immediately.</p>
+
+<h3>Drills</h3>
+<p><strong>The arrival drill:</strong> Park safely, send confirmatory message, situational assessment, equipment check, firearm from state zero to state one, move to activity area.</p>
+<p><strong>The engagement drill:</strong> Move to state two, apply four clearance questions, if cleared move to state three and take the shot, return immediately to state one, observe result.</p>
+<p><strong>The obstacle drill:</strong> Any time crossing a fence or obstacle — cease movement, make safe to state zero, cross the obstacle, return to state one. Every time. Without exception.</p>
+<p><strong>The stand-down drill:</strong> Cease movement, make safe to state zero, assess and communicate, move back toward vehicle, send end-of-visit message.</p>
+
+<h3>Walking away from shots</h3>
+<p>The shot you don't take never goes wrong. Every shot you take introduces a possibility of something going wrong. Every shot you decline carries that possibility back to zero. The professional operator is the hunter who declines the most shots for the right reasons.</p>`,
+    quiz: [
+      { q: "Which firearms safety principle is described as 'the safety that cannot fail as long as you control it'?", options: ["Treating every firearm as loaded", "Muzzle discipline", "Trigger finger discipline", "The manual safety catch"], answer: 2 },
+      { q: "What is the defining characteristic of action state two (loaded and ready)?", options: ["Magazine fitted, chamber loaded, manual safety off, finger on trigger", "Magazine fitted, chamber loaded, action closed, manual safety applied, muzzle oriented, finger off trigger", "Magazine fitted, chamber empty, manual safety applied", "Magazine out, chamber empty, action open"], answer: 1 },
+      { q: "You come to a fence you need to cross. The correct procedure is:", options: ["Carry the firearm across in action state one", "Pass the firearm over the fence and climb over", "Make safe to action state zero, cross the fence, then return to action state one", "Keep the firearm slung and climb across"], answer: 2 },
+      { q: "If any one of the four clearance questions cannot be answered with certainty, what happens?", options: ["Take the shot and hope it works out", "Take the shot but aim conservatively", "Do not take the shot — lower the rifle and wait, move, or go home", "Take the shot only if the target is about to disappear"], answer: 2 },
+      { q: "There is stock over your shoulder, about 300 metres away. Your target is in front of you. Is it safe to shoot?", options: ["Yes — stock are not in the line of fire", "Yes — 300 metres is sufficient margin", "No — the engagement geometry must never cross any direction where stock are present", "Yes, provided you aim low"], answer: 2 },
+      { q: "'The shot you don't take never goes wrong' describes which concept?", options: ["Hunters should always be reluctant to take shots", "Every shot declined is a shot saved for another day", "Professional operators decline shots for the right reasons, because every shot introduces a possibility of something going wrong", "New hunters should wait for experience"], answer: 2 },
+      { q: "A wounded pig has run off into thick scrub. What is your obligation?", options: ["Resume your other activity and come back later", "Track and attempt to finish the wounded animal within safe terrain and daylight, and inform the farmer", "Leave it — it will die naturally", "Take additional shots in the direction it went"], answer: 1 },
+      { q: "Your shot has gone somewhere unexpected. What is the first action?", options: ["Resume the activity and assess later", "Continue while keeping an eye out", "Cease fire, make safe, assess deliberately, and contact the farmer immediately", "Make a note and report it at the end of the day"], answer: 2 },
+      { q: "What does 'standing down' mean in this context?", options: ["Giving up on a property", "A deliberate decision to halt an activity because conditions are no longer correct for it to continue safely", "Taking a short break", "Withdrawing from AHA membership"], answer: 1 },
+      { q: "The AHA operating standard on minimum distances from stock, houses, roads is:", options: ["Match the legal minimum", "Slightly above the legal minimum", "Well above the legal minimum — the legal minimum is the floor, and an AHA member does not operate at the floor", "Whatever the farmer tells you"], answer: 2 }
+    ]
+  },
+  {
+    id: 4,
+    title: "Species, Ethics, and Humane Dispatch",
+    desc: "The nine main pest species and the standards for engaging them",
+    content: `<h3>The humane dispatch standard</h3>
+<p>You are responsible for a humane outcome for every animal you engage. The general standard: a single shot to the brain or heart-lung area, from a range and angle at which reliable placement is possible, with the operator prepared to deliver an immediate follow-up shot if needed. Any animal not killed instantly must be tracked and finished.</p>
+<p>When placement is in doubt, the answer is to wait, reposition, or stand down — not take the shot and hope.</p>
+
+<h3>European red fox</h3>
+<p>The most common pest species on Australian agricultural land. The problem: lambs, kid goats, poultry, and native wildlife predation. Mostly nocturnal or crepuscular. Calibre: centrefire .222 to .243 class. Shot placement: chest (heart-lung) is standard. What goes wrong: shots in long grass or fading light without positive identification, shots beyond confident range.</p>
+
+<h3>Feral pig</h3>
+<p>The most physically demanding pest species. Range from 30 kg to over 200 kg, intelligent, and genuinely dangerous when wounded. Calibre: .243 Win minimum, .308 Win or larger preferred. Shot placement: high shoulder/heart-lung — pig vital organs sit further forward than most species. Head shots are difficult and not recommended unless experienced. Biosecurity: some regions have specific carcass protocols.</p>
+
+<h3>European rabbit</h3>
+<p>Volume work — many shots in a short time. Calibre: rimfire .22 LR is the workhorse. Shot placement: head shots standard at rimfire ranges. What goes wrong: volume tempts hunters to relax standing orders — don't. The four clearance questions apply to every shot.</p>
+
+<h3>Feral goat</h3>
+<p>Common in rangelands. Calibre: .243 Win minimum. Shot placement: chest behind the shoulder. What goes wrong: shots into mobs wounding secondary animals. Be deliberate about target selection in a mob.</p>
+
+<h3>Feral deer</h3>
+<p>Multiple species — fallow, red, sambar, chital, rusa, hog. Calibre: .243 Win minimum, .270 and .308 standard. Shot placement: heart-lung behind the shoulder. Important: deer regulations vary significantly by state. Confirm species, property status, and farmer authority before any engagement.</p>
+
+<h3>Feral cat</h3>
+<p>Major environmental pest. Calibre: centrefire .22 standard. What goes wrong: misidentification. Make absolutely certain the animal is feral and not a domestic cat from a farmhouse or neighbour — the reputational cost is severe.</p>
+
+<h3>Wild dogs and dingoes</h3>
+<p>Legal status varies significantly between states and regions. Three things you must confirm: the farmer has given written authorisation, the legal status of wild dogs versus dingoes in the region is clear, and no working farm dogs are present. If any is unclear, the activity does not proceed. Misidentification of a working farm dog is a tragedy that has happened before and cannot be undone.</p>
+
+<h3>Kangaroos</h3>
+<p>Kangaroos are protected native wildlife, managed under separate regulatory frameworks. They can only be lawfully shot under specific authorities — damage mitigation permits, commercial harvest licences, or scientific permits. The AHA position: you do not engage any kangaroo without first confirming, in writing, that the landholder holds a valid permit. Shot placement: head shot is required under the RSPCA Code of Practice. Body shots are not acceptable.</p>
+
+<h3>The ethical bottom line</h3>
+<p>Two responsibilities: humane dispatch (every animal gets a clean shot, every wounded animal tracked and finished) and legal authority (every species engaged is authorised within the legal framework). Both are non-negotiable.</p>`,
+    quiz: [
+      { q: "What is the general humane dispatch standard AHA expects?", options: ["A single shot to any area that produces a kill", "A single shot to the brain or heart-lung area, from a range and angle at which reliable placement is possible, with immediate follow-up if required", "Multiple shots to ensure the animal doesn't escape", "Whatever the farmer requests"], answer: 1 },
+      { q: "What is the authoritative reference for humane dispatch standards in Australia?", options: ["The state firearms licensing manual", "The RSPCA Model Code of Practice for the Humane Shooting of Feral Animals", "The AHA Foundation course", "Local hunting club guidelines"], answer: 1 },
+      { q: "Which is true about calibre selection for feral pigs?", options: ["Any centrefire is adequate", "Rimfire .22 LR is acceptable at close range", ".243 Winchester or larger is the sensible minimum, with larger calibres preferred for bigger animals", "Calibre doesn't matter if placement is correct"], answer: 2 },
+      { q: "A farmer has told you verbally that you can shoot kangaroos. What is the correct response?", options: ["Proceed — verbal authority is sufficient", "Proceed only at distances where you can make a clean shot", "Do not proceed until you have written confirmation that the farmer holds a valid permit", "Proceed but keep the activity discreet"], answer: 2 },
+      { q: "Under the RSPCA Code of Practice, what shot placement is required for kangaroos?", options: ["Heart-lung", "Head shot", "Either, at the operator's discretion", "Any shot that produces a kill"], answer: 1 },
+      { q: "At dusk, you see movement in long grass. You think it's probably a fox. What is the correct action?", options: ["Take the shot — foxes in fading light are common", "Take it if the movement looks like a fox", "Do not take the shot — 'probably' is not positive identification", "Take a warning shot to see what the animal does"], answer: 2 },
+      { q: "A wounded pig has gone into thick scrub. You can hear it but cannot see it. What do you do?", options: ["Continue your other activity and check later", "Wait for it to come back out", "Track and attempt recovery within safe terrain and daylight, prepared for danger on approach", "Take additional shots into the scrub"], answer: 2 },
+      { q: "Before engaging wild dogs or dingoes, what three things must you confirm?", options: ["Calibre, range, and ammunition", "Written authorisation from the farmer, the legal status of dingoes in the region, and that no working farm dogs are present", "Time of day, weather, and terrain", "Shot placement, recovery plan, and carcass disposal"], answer: 1 },
+      { q: "Who decides what happens to carcasses after dispatch?", options: ["The operator, based on convenience", "The farmer, based on their preferences and biosecurity considerations", "Local regulations", "Standard practice is to always remove carcasses"], answer: 1 },
+      { q: "What is the ethical bottom line of this module?", options: ["Humane dispatch and legal authority — every animal gets a clean shot, every species engaged only where properly authorised", "Taking as many animals as possible", "Matching calibre to species precisely", "Following farmer instructions exactly"], answer: 0 }
+    ]
+  },
+  {
+    id: 5,
+    title: "Law, Licensing, and Liability",
+    desc: "Firearms law, public liability insurance, and AHA standards",
+    content: `<h3>Your firearms licence</h3>
+<p>Everything you do as an AHA member starts with your firearms licence. Your licence is personal to you, conditional, and your responsibility to understand fully. Pest control is a recognised reason to hold a firearms licence in every state, but the exact categories vary. Know which category you hold and what it permits.</p>
+<p>In the first month of your AHA membership, read your state's firearms regulations end to end. Not skim — read.</p>
+
+<h3>What your licence does and does not authorise</h3>
+<p>The combination required for any pest management activity:</p>
+<p>1. A current firearms licence appropriate to the firearm you're using<br>
+2. Express permission from the landholder to be on their property<br>
+3. Express authorisation from the landholder to engage the specific species<br>
+4. The landholder's underlying legal right to grant that authorisation</p>
+<p>If any one of those four is missing, you are not authorised to be doing the work.</p>
+
+<h3>Public liability insurance — the non-negotiable</h3>
+<p>Public liability cover protects you against claims for property damage or personal injury caused to third parties. Without cover, a successful claim can run into hundreds of thousands or millions — and you pay personally.</p>
+<p>The minimum for pest management work: <strong>$10 million</strong>. $20 million is better and not significantly more expensive.</p>
+<p>SSAA membership comes with liability cover useful for recreational shooting at ranges and clubs. However, SSAA cover is not designed to respond to working pest management activity — it typically excludes activity with a "commercial" or "work-related" character. The gap between SSAA and what an AHA member needs is what an individual policy fills.</p>
+<p>AHA can assist members in obtaining an individual policy — email david@australianhuntingassociation.com.au.</p>
+
+<h3>Insurance status on your profile</h3>
+<p>Your insurance status is visible on your profile and is one of the key factors farmers consider when selecting. Operating without insurance significantly limits your credibility and opportunities.</p>
+
+<h3>When something goes wrong — incident response</h3>
+<p>Immediate action: stop the activity, make safe, address safety needs, contact the farmer immediately. Within 24 hours: notify AHA, notify your insurer, document everything. If serious: call a solicitor before discussing details with anyone else.</p>
+
+<h3>AHA standards and the complaints process</h3>
+<p>Any farmer, member, or third party can make a complaint. Complaints are investigated, the member responds, and outcomes range from no action through warning, suspension, to permanent removal. Permanent removal is reserved for serious breaches: discharging a firearm in breach of safety standards, engaging native species without authority, misrepresenting your status, or conduct that brings AHA into disrepute.</p>`,
+    quiz: [
+      { q: "What four elements must all be present before you are legally authorised to engage in pest management?", options: ["A firearms licence, ammunition, transport, and the right calibre", "A current firearms licence, the landholder's permission, the landholder's authorisation for species, and the landholder's legal right to grant that authorisation", "AHA membership, insurance, a rifle, and a vehicle", "The farmer's verbal say-so"], answer: 1 },
+      { q: "What is the minimum level of public liability insurance an AHA member should hold?", options: ["$1 million", "$5 million", "$10 million minimum, with $20 million better", "Whatever your household policy provides"], answer: 2 },
+      { q: "You hold SSAA membership with standard insurance. Are you covered for AHA pest management work?", options: ["Yes — SSAA covers all shooting activity", "Yes — as long as you're a member", "Partially — SSAA typically excludes activity with a commercial or work-related character", "No — SSAA covers nothing relevant"], answer: 2 },
+      { q: "How does AHA support members in obtaining public liability insurance?", options: ["AHA provides automatic group cover", "AHA can assist members in obtaining an individual policy by emailing AHA admin", "AHA does not provide any assistance", "AHA sells insurance directly"], answer: 1 },
+      { q: "Do you need a separate written authority document for every property?", options: ["Yes — every property requires a signed paper form", "No — the platform itself is the documentation, with anything beyond the original scope confirmed by SMS or email", "Only for larger properties", "Only if the farmer asks"], answer: 1 },
+      { q: "You're licensed in WA and a farmer in SA contacts you. What is the correct first step?", options: ["Drive across and start the job", "Verify your authority to operate in SA before you go", "Assume your licence is recognised", "Decline — interstate work is not permitted"], answer: 1 },
+      { q: "What is the immediate action sequence if a serious incident occurs?", options: ["Hide the incident", "Stop the activity, make safe, address safety needs (first aid, 000 if injury), contact the farmer immediately", "Continue and report later", "Contact a journalist"], answer: 1 },
+      { q: "After a serious incident, who should you talk to before discussing details with anyone outside the farmer, AHA, and your insurer?", options: ["A hunting forum", "A newspaper", "A solicitor", "Social media"], answer: 2 },
+      { q: "Which could result in permanent removal from AHA?", options: ["Discharging a firearm in breach of safety standards causing serious harm", "Engaging native species without lawful authority", "Misrepresenting your licence, insurance, or vetting status", "All of the above"], answer: 3 },
+      { q: "Why is your insurance status visible on your profile?", options: ["To embarrass uninsured members", "Because farmers consider it a key factor when selecting — operating without insurance limits your credibility", "Because the law requires it", "It has no real effect on selection"], answer: 1 }
+    ]
+  },
+  {
+    id: 6,
+    title: "The Marksmen Co, AHA, and Community Standards",
+    desc: "Profile quality, the ambassador principle, and your reputation",
+    content: `<h3>Your profile on The Marksmen Co</h3>
+<p>Your profile is the first thing a farmer sees. Farmers typically review several profiles before making a decision, and most decisions are made quickly based on clarity and trust signals.</p>
+<p>Principles for a profile that works:</p>
+<p><strong>Use a real photo of yourself.</strong> Not a rifle shot, not a kill photo. A clear, friendly photo of your face in outdoor clothing.</p>
+<p><strong>Write your bio in plain English.</strong> Two or three short paragraphs, in your own voice. Where you're based, how long you've been doing this, what kind of country you're comfortable in. Avoid jargon and equipment lists.</p>
+<p><strong>Be specific.</strong> "Experienced with all pest species across all terrain" reads as generic. "Mostly fox work in the wheatbelt, comfortable with pigs in scrub country, happy to travel for the right job" reads as honest and useful.</p>
+<p><strong>List your AHA membership and insurance status clearly.</strong> These are the two pieces of information that tell a farmer they're dealing with a professional.</p>
+
+<h3>Your badges</h3>
+<p>The AHA badges — Member, Verified, Insurance Declared, Foundation Trained — appear directly on your profile and form a key part of how farmers assess trust. Together, they let a farmer understand in about three seconds that you are a vetted, trained, insured, accountable professional.</p>
+
+<h3>Responding to requests well</h3>
+<p>Three principles: read the request properly and mention something specific from it. Be direct — if you can do the job, say so. Don't oversell — underpromise and overdeliver.</p>
+<p>Once selected, the communication patterns from Module 2 — confirmatory message, end-of-visit message, day-after debrief — are what turn a one-off job into an ongoing relationship.</p>
+
+<h3>Requests you can't take</h3>
+<p>Not every request is one you should take. Decline when: the property is too far, the species are outside your experience, the legal authority isn't clear, the farmer's description feels off, or you're overcommitted. Declining politely and quickly is professional. Going silent is not.</p>
+
+<h3>The ambassador principle</h3>
+<p>When you operate as an AHA member, you are not just doing pest management work. You are demonstrating, by your conduct, that there is a professional standard for this work in Australia. Every farmer forms an opinion not only about you but about the broader category of hunters.</p>
+<p>Your conduct, on and off the platform, directly influences how AHA members are perceived and how future farmers engage with the platform.</p>
+<p>In practice: you behave at the pub the way you'd behave on a farmer's property. You don't post things online you wouldn't be happy for a farmer to see. You speak about other hunters and farmers with respect, always.</p>
+
+<h3>What comes next</h3>
+<p>Foundation gets you operating. The AHA Intermediate course, currently in development, will go deeper into advanced shot placement, night operations, multi-species planning, and the techniques that separate experienced operators from new ones.</p>
+<p>For now, consolidate what you've learned. Operate well, communicate well, build your reputation, and the rest will come.</p>`,
+    quiz: [
+      { q: "What is the most important thing on a profile that farmers look at?", options: ["The list of qualifications", "The equipment list", "A clear, friendly photo combined with a plain-English bio and visible AHA credentials", "The number of species claimed"], answer: 2 },
+      { q: "When responding to a request, what is the single thing most members underestimate?", options: ["The length of the response", "The number of credentials mentioned", "Reading the farmer's request properly and mentioning something specific from it", "The speed of the response"], answer: 2 },
+      { q: "A request comes in for a property too far away. What is the right response?", options: ["Take the job and try to make it work", "Ignore the request", "Send a brief polite decline quickly so the farmer can move on", "Delay in case something changes"], answer: 2 },
+      { q: "What does 'underpromise, overdeliver' mean?", options: ["Promising to solve the entire problem so the farmer is impressed", "Setting honest expectations you can actually beat", "Refusing to commit to anything", "Being deliberately vague"], answer: 1 },
+      { q: "What does the 'ambassador principle' mean in practice?", options: ["You have to behave perfectly at all times", "Your conduct, on and off the platform, directly influences how AHA members are perceived", "You have to attend AHA meetings", "You represent AHA at formal events"], answer: 1 },
+      { q: "A request comes in and the farmer's description feels off. What do you do?", options: ["Take the job and figure it out on arrival", "Decline politely — instinct that something is wrong is a valid reason to walk away", "Press the farmer for more details until you understand", "Report the farmer to AHA"], answer: 1 },
+      { q: "How often should you update your profile?", options: ["Once at setup, then never", "Only when something major changes", "Every few months, with a short refresh", "After every visit"], answer: 2 },
+      { q: "What is the difference between reading the AHA code of conduct as compliance versus identity?", options: ["No difference", "Compliance is reading it as rules to avoid being kicked out; identity is reading it as a description of the operator you've decided to become", "Compliance is for new members, identity for senior ones", "Compliance is the official version, identity the unofficial one"], answer: 1 },
+      { q: "What do the four AHA badges on your profile signal to a farmer?", options: ["Advanced training", "That you are a vetted, trained, insured, accountable professional — a three-second visual summary", "That you are paid up", "That you have insurance"], answer: 1 },
+      { q: "What is the single most important thing to do after completing Foundation?", options: ["Sign up for Intermediate immediately", "Buy more equipment", "Consolidate what you've learned by operating well, communicating well, and building your reputation", "Update your social media"], answer: 2 }
+    ]
+  }
+];
+
+
+// =====================================================
+// SUPABASE HELPERS
+// =====================================================
+async function supabaseQuery(table, column, value) {
+  if (SUPABASE_URL.includes('YOUR-PROJECT-ID')) return null; // Demo mode
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${column}=eq.${encodeURIComponent(value)}&select=*`, {
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+  });
+  if (!r.ok) return null;
+  const data = await r.json();
+  return data.length > 0 ? data[0] : null;
+}
+
+// =====================================================
+// LOGIN & SIGNUP
+// =====================================================
+let verifiedAHAMember = null;
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const error = document.getElementById('gate-error');
+  error.style.display = 'none';
+  
+  if (!email) { error.textContent = 'Please enter your email address.'; error.style.display = 'block'; return; }
+  if (!password) { error.textContent = 'Please enter your password.'; error.style.display = 'block'; return; }
+  
+  const btn = document.getElementById('gate-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Signing in...';
+  
+  try {
+    if (SUPABASE_URL.includes('YOUR-PROJECT-ID')) {
+      await new Promise(r => setTimeout(r, 600));
+      currentMember = { member_number: 'AHA-2026-00001', full_name: 'David Mynott', email: email, membership_status: 'active', current_period_end: '2027-04-24', foundation_status: 'not_started', shooting_test_status: 'not_submitted', certificate_number: null };
+      enterPortal();
+    } else {
+      const member = await supabaseQuery('member_verification', 'email', email);
+      if (!member) {
+        error.innerHTML = 'Account not found. <a href="#" onclick="showPage(\'signup\')" style="color:var(--green-mid);font-weight:600;">Create an account</a> or check your email.';
+        error.style.display = 'block';
+      } else if (member.membership_status !== 'active') {
+        error.textContent = 'Your AHA membership is not active. Contact david@australianhuntingassociation.com.au';
+        error.style.display = 'block';
+      } else {
+        currentMember = member;
+        enterPortal();
+      }
+    }
+  } catch (e) {
+    error.textContent = 'Something went wrong. Please try again.';
+    error.style.display = 'block';
+  }
+  
+  btn.disabled = false;
+  btn.textContent = 'Sign In';
+}
+
+async function verifyAHASignup() {
+  const input = document.getElementById('signup-aha');
+  const resultEl = document.getElementById('aha-verify-result');
+  const num = input.value.trim().toUpperCase();
+  
+  if (!num) { resultEl.innerHTML = '<p style="color:var(--red);font-size:0.8rem;">Please enter your AHA member number.</p>'; return; }
+  
+  try {
+    if (SUPABASE_URL.includes('YOUR-PROJECT-ID')) {
+      // Demo mode
+      if (num.startsWith('AHA-')) {
+        verifiedAHAMember = { member_number: num, full_name: 'David Mynott', email: 'david@australianhuntingassociation.com.au', membership_status: 'active', current_period_end: '2027-04-24' };
+      } else {
+        resultEl.innerHTML = '<p style="color:var(--red);font-size:0.8rem;">Member number not found. Check and try again.</p>';
+        return;
+      }
+    } else {
+      const member = await supabaseQuery('member_verification', 'member_number', num);
+      if (!member) { resultEl.innerHTML = '<p style="color:var(--red);font-size:0.8rem;">Member number not found. Check and try again, or <a href="https://australianhuntingassociation.com.au" target="_blank" style="color:var(--gold);">join AHA</a>.</p>'; return; }
+      if (member.membership_status !== 'active') { resultEl.innerHTML = '<p style="color:var(--red);font-size:0.8rem;">This membership is not active. Contact david@australianhuntingassociation.com.au</p>'; return; }
+      verifiedAHAMember = member;
+    }
+    
+    // Success — unlock the details form
+    resultEl.innerHTML = '<div class="alert alert-success" style="margin-top:0.5rem;margin-bottom:0;"><strong>✓ Verified</strong> — ' + verifiedAHAMember.full_name + ' · ' + verifiedAHAMember.member_number + '</div>';
+    
+    const detailsSection = document.getElementById('signup-details-section');
+    detailsSection.disabled = false;
+    detailsSection.style.opacity = '1';
+    
+    // Pre-fill email if available
+    if (verifiedAHAMember.email) {
+      document.getElementById('signup-email').value = verifiedAHAMember.email;
+    }
+    // Pre-fill name if available
+    if (verifiedAHAMember.full_name) {
+      const parts = verifiedAHAMember.full_name.split(' ');
+      document.getElementById('signup-first').value = parts[0] || '';
+      document.getElementById('signup-last').value = parts.slice(1).join(' ') || '';
+    }
+    
+  } catch (e) {
+    resultEl.innerHTML = '<p style="color:var(--red);font-size:0.8rem;">Something went wrong. Try again.</p>';
+  }
+}
+
+function hunterSignup() {
+  const first = document.getElementById('signup-first').value.trim();
+  const last = document.getElementById('signup-last').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const phone = document.getElementById('signup-phone').value.trim();
+  const location = document.getElementById('signup-location').value.trim();
+  const state = document.getElementById('signup-state').value;
+  const pw = document.getElementById('signup-password').value;
+  const pwConfirm = document.getElementById('signup-password-confirm').value;
+  
+  if (!verifiedAHAMember) { alert('Please verify your AHA member number first.'); return; }
+  if (!first || !last || !email || !phone || !location || !state) { alert('Please fill in all required fields.'); return; }
+  if (pw.length < 8) { alert('Password must be at least 8 characters.'); return; }
+  if (pw !== pwConfirm) { alert('Passwords do not match.'); return; }
+  
+  // In production: create Supabase auth user, link to AHA membership, store profile details
+  currentMember = {
+    member_number: verifiedAHAMember.member_number,
+    full_name: first + ' ' + last,
+    email: email,
+    membership_status: 'active',
+    current_period_end: verifiedAHAMember.current_period_end,
+    foundation_status: 'not_started',
+    shooting_test_status: 'not_submitted',
+    certificate_number: null
+  };
+  
+  enterPortal();
+}
+
+function enterPortal() {
+  document.getElementById('dash-name').textContent = currentMember.full_name.split(' ')[0];
+  document.getElementById('dash-status').textContent = `${currentMember.member_number} · Expires ${new Date(currentMember.current_period_end).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}`;
+  
+  // Populate AHA number in profile builder
+  const ahaInput = document.getElementById('profile-aha-number');
+  if (ahaInput) ahaInput.value = currentMember.member_number;
+  
+  // Set up modules based on foundation status
+  if (currentMember.foundation_status === 'completed') {
+    completedModules = [0,1,2,3,4,5];
+  }
+  
+  // Load notifications
+  loadDemoNotifications();
+  
+  renderModules();
+  updateStats();
+  showPage('dashboard');
+}
+
+// =====================================================
+// TRAINING MODULES
+// =====================================================
+function renderModules() {
+  const list = document.getElementById('module-list');
+  const pct = (completedModules.length / 6 * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${completedModules.length} of 6 modules complete`;
+
+  list.innerHTML = MODULES.map((m, i) => {
+    const done = completedModules.includes(i);
+    const isCurrent = !done && i === completedModules.length;
+    const locked = !done && i > completedModules.length;
+    const cls = done ? 'completed' : isCurrent ? 'current' : 'locked';
+    const numCls = done ? 'module-num-complete' : isCurrent ? 'module-num-current' : 'module-num-pending';
+    const statusCls = done ? 'module-status-complete' : isCurrent ? 'module-status-current' : 'module-status-locked';
+    const statusText = done ? '✓ Complete' : isCurrent ? 'Start →' : 'Locked';
+    const onclick = locked ? '' : `onclick="openModule(${i})"`;
+    return `<div class="module-card ${cls}" ${onclick}>
+      <div class="module-num ${numCls}">${done ? '✓' : i+1}</div>
+      <div class="module-info"><div class="module-title">${m.title}</div><div class="module-desc">${m.desc}</div></div>
+      <div class="module-status ${statusCls}">${statusText}</div>
+    </div>`;
+  }).join('');
+
+  // Enable handbook button if all modules complete
+  const hbBtn = document.getElementById('handbook-btn');
+  const hbText = document.getElementById('handbook-status-text');
+  if (completedModules.length === 6) {
+    hbBtn.disabled = false;
+    if (handbookComplete) {
+      hbText.textContent = '✓ Handbook complete';
+      hbText.style.color = 'var(--success)';
+      hbBtn.textContent = 'Review';
+    } else {
+      hbText.textContent = 'Ready — read the handbook before your shooting qualification';
+    }
+  }
+
+  // Enable shooting button if handbook is complete
+  const shootBtn = document.getElementById('shooting-btn');
+  const shootText = document.getElementById('shooting-status-text');
+  if (handbookComplete) {
+    shootBtn.disabled = false;
+    shootText.textContent = 'Ready to submit your shooting qualification';
+    if (currentMember.shooting_test_status === 'approved') {
+      shootBtn.disabled = true;
+      shootText.textContent = '✓ Shooting qualification approved';
+      shootText.style.color = 'var(--success)';
+    } else if (currentMember.shooting_test_status === 'pending') {
+      shootBtn.disabled = true;
+      shootText.textContent = '⏳ Submission under review';
+    }
+  } else if (completedModules.length === 6) {
+    shootText.textContent = 'Complete the Marksmanship Handbook first';
+  } else {
+    shootText.textContent = 'Complete training and handbook first';
+  }
+
+  // Show certified section if certificate exists
+  if (currentMember.certificate_number) {
+    document.getElementById('cert-progress-section').style.display = 'none';
+    document.getElementById('cert-complete-section').style.display = 'block';
+    document.getElementById('cert-number-display').textContent = currentMember.certificate_number;
+  }
+}
+
+function openModule(index) {
+  if (index > completedModules.length) return;
+  currentModule = index;
+  const m = MODULES[index];
+  document.getElementById('training-module-title').textContent = `Module ${m.id}: ${m.title}`;
+  document.getElementById('training-module-content').innerHTML = `<p>${m.content}</p>`;
+  
+  const quizHtml = m.quiz.map((q, qi) => `
+    <div style="margin-bottom:1rem;">
+      <p style="font-weight:600;font-size:0.875rem;margin-bottom:0.5rem;">${qi+1}. ${q.q}</p>
+      ${q.options.map((opt, oi) => `
+        <label style="display:flex;align-items:center;gap:0.5rem;padding:0.375rem 0;cursor:pointer;font-size:0.8125rem;">
+          <input type="radio" name="quiz-${qi}" value="${oi}" style="accent-color:var(--green-mid);">
+          ${opt}
+        </label>
+      `).join('')}
+    </div>
+  `).join('');
+  document.getElementById('training-quiz').innerHTML = quizHtml;
+  showPage('training');
+}
+
+function submitQuiz() {
+  const m = MODULES[currentModule];
+  let correct = 0;
+  let total = m.quiz.length;
+  
+  for (let qi = 0; qi < total; qi++) {
+    const selected = document.querySelector(`input[name="quiz-${qi}"]:checked`);
+    if (selected && parseInt(selected.value) === m.quiz[qi].answer) {
+      correct++;
+    }
+  }
+  
+  const resultEl = document.getElementById('quiz-result');
+  const passThreshold = Math.ceil(total * 0.8); // 8 out of 10
+  
+  if (correct >= passThreshold) {
+    // Passed
+    resultEl.innerHTML = `<div class="alert alert-success"><strong>Passed — ${correct}/${total}</strong><br>Module complete. Returning to dashboard.</div>`;
+    resultEl.style.display = 'block';
+    
+    if (!completedModules.includes(currentModule)) {
+      completedModules.push(currentModule);
+    }
+    
+    setTimeout(() => {
+      renderModules();
+      updateStats();
+      showPage('dashboard');
+      resultEl.style.display = 'none';
+    }, 1500);
+  } else {
+    // Failed
+    resultEl.innerHTML = `<div class="alert alert-warning"><strong>${correct}/${total} — you need at least ${passThreshold} to pass.</strong><br>Review the module content above and try again. You can retake the quiz as many times as needed.</div>`;
+    resultEl.style.display = 'block';
+    window.scrollTo({ top: resultEl.offsetTop - 100, behavior: 'smooth' });
+  }
+}
+
+// =====================================================
+// HANDBOOK
+// =====================================================
+function downloadHandbook() {
+  // Mark handbook as downloaded — unlocks shooting qualification
+  handbookComplete = true;
+  renderModules();
+  updateStats();
+}
+
+function completeHandbook() {
+  downloadHandbook();
+  showPage('dashboard');
+}
+
+// =====================================================
+// SHOOTING
+// =====================================================
+function shootingFileSelected(input) {
+  if (input.files.length > 0) {
+    const nameEl = document.getElementById('shooting-file-name');
+    nameEl.textContent = '✓ ' + input.files[0].name;
+    nameEl.style.display = 'block';
+  }
+}
+
+function licenceFileSelected(input) {
+  if (input.files.length > 0) {
+    const nameEl = document.getElementById('licence-file-name');
+    nameEl.textContent = '✓ ' + input.files[0].name + ' — uploaded';
+    nameEl.style.display = 'block';
+  }
+}
+
+function submitShooting() {
+  const file = document.getElementById('shooting-file');
+  if (!file.files.length) {
+    alert('Please upload your target photo or Virtual-Shot results.');
+    return;
+  }
+  currentMember.shooting_test_status = 'pending';
+  renderModules();
+  updateStats();
+  alert('Shooting qualification submitted. You\'ll be notified within 5 business days.');
+  showPage('dashboard');
+}
+
+// =====================================================
+// PROFILE
+// =====================================================
+function toggleSpecies(row) {
+  const cb = row.querySelector('input[type="checkbox"]');
+  setTimeout(() => {
+    row.classList.toggle('selected', cb.checked);
+    togglePermitWarning();
+  }, 10);
+}
+
+function togglePermitWarning() {
+  const rows = document.querySelectorAll('.species-row');
+  let permit = false;
+  rows.forEach(r => {
+    const name = r.querySelector('.species-name');
+    if (name && (name.textContent.includes('Kangaroos') || name.textContent.includes('Emus'))) {
+      if (r.querySelector('input[type="checkbox"]').checked) permit = true;
+    }
+  });
+  const w = document.getElementById('permit-warning');
+  if (w) w.classList.toggle('visible', permit);
+}
+
+function submitProfile() {
+  alert('Your profile is now live on The Marksmen Co. Farmers can see you immediately. Our team will review your details in the background — if anything needs updating, we\'ll be in touch.');
+  showPage('dashboard');
+}
+
+// =====================================================
+// JOBS
+// =====================================================
+function expressInterest(btn) {
+  btn.textContent = '✓ Interested';
+  btn.style.background = 'var(--success)';
+  btn.disabled = true;
+}
+
+// =====================================================
+// JOBS MAP
+// =====================================================
+let jobsMap = null;
+
+const SAMPLE_JOBS = [
+  { id: 1, lat: -31.56, lng: 116.45, region: 'Toodyay, WA', species: ['Red fox', 'European rabbit'], desc: 'Significant fox pressure around lambing paddocks, also rabbits in the eastern boundary.', status: 'open', interest_count: 0, posted_days_ago: 2 },
+  { id: 2, lat: -30.65, lng: 116.02, region: 'Moora, WA', species: ['Feral pig'], desc: 'Pigs coming in from the creek line and destroying fencing and water troughs.', status: 'open', interest_count: 2, posted_days_ago: 5 },
+  { id: 3, lat: -31.89, lng: 116.76, region: 'York, WA', species: ['Red fox'], desc: 'Foxes taking lambs in the south paddock. Open country, good vehicle access.', status: 'open', interest_count: 0, posted_days_ago: 3 },
+  { id: 4, lat: -33.34, lng: 115.64, region: 'Busselton, WA', species: ['European rabbit', 'Red fox'], desc: 'Rabbits damaging vineyard perimeter. Foxes also spotted.', status: 'filled', interest_count: 4, posted_days_ago: 12 },
+  { id: 5, lat: -30.04, lng: 115.87, region: 'Geraldton, WA', species: ['Wild dogs / dingoes'], desc: 'Wild dogs taking calves on the northern boundary. Urgent.', status: 'open', interest_count: 0, posted_days_ago: 9 },
+  { id: 6, lat: -32.55, lng: 117.88, region: 'Narrogin, WA', species: ['Red fox', 'Feral cat'], desc: 'Fox and feral cat pressure around the poultry operation.', status: 'open', interest_count: 1, posted_days_ago: 4 },
+  { id: 7, lat: -31.17, lng: 117.23, region: 'Merredin, WA', species: ['Kangaroos'], desc: 'Roos damaging crop fencing on the eastern paddocks. Need someone experienced.', status: 'open', interest_count: 0, posted_days_ago: 1 },
+  { id: 8, lat: -28.77, lng: 114.62, region: 'Kalbarri, WA', species: ['Feral goat'], desc: 'Goat mob on the station, estimated 40-50 head. Multi-day job.', status: 'open', interest_count: 3, posted_days_ago: 10 },
+];
+
+function getJobPinColor(job) {
+  if (job.status === 'filled') return '#c0392b'; // Red
+  if (job.posted_days_ago >= 7 && job.interest_count === 0) return '#e67e22'; // Orange - national
+  if (job.interest_count > 0) return '#2980b9'; // Blue - has applicants
+  return '#27ae60'; // Green - open
+}
+
+function getJobStatusLabel(job) {
+  if (job.status === 'filled') return 'Filled';
+  if (job.posted_days_ago >= 7 && job.interest_count === 0) return 'Open nationally';
+  if (job.interest_count > 0) return `${job.interest_count} hunter${job.interest_count > 1 ? 's' : ''} interested`;
+  return 'Open';
+}
+
+function createPinIcon(color) {
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:20px;height:20px;background:${color};border:2px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.35);"></div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -12]
+  });
+}
+
+function initMap() {
+  if (jobsMap) return; // Already initialized
+  
+  // Wait for the map container to be visible
+  setTimeout(() => {
+    const mapEl = document.getElementById('jobs-map');
+    if (!mapEl) return;
+    
+    jobsMap = L.map('jobs-map').setView([-31.0, 116.5], 6);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 15
+    }).addTo(jobsMap);
+    
+    // Add job pins
+    SAMPLE_JOBS.forEach(job => {
+      const color = getJobPinColor(job);
+      const statusLabel = getJobStatusLabel(job);
+      const speciesTags = job.species.map(s => `<span style="background:rgba(0,0,0,0.08);padding:2px 6px;border-radius:3px;font-size:0.7rem;margin-right:3px;">${s}</span>`).join('');
+      
+      const popup = `
+        <div style="font-family:'DM Sans',sans-serif;min-width:200px;max-width:260px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <strong style="font-size:0.8125rem;">📍 ${job.region}</strong>
+            <span style="font-size:0.65rem;padding:2px 6px;border-radius:3px;background:${color};color:white;font-weight:600;">${statusLabel}</span>
+          </div>
+          <div style="margin-bottom:6px;">${speciesTags}</div>
+          <p style="font-size:0.75rem;color:#555;line-height:1.4;margin-bottom:6px;">${job.desc}</p>
+          <div style="font-size:0.7rem;color:#888;">Posted ${job.posted_days_ago} day${job.posted_days_ago > 1 ? 's' : ''} ago</div>
+          ${job.status !== 'filled' ? '<button onclick="expressInterestMap('+job.id+')" style="margin-top:8px;width:100%;padding:6px;background:#b8860b;color:white;border:none;border-radius:4px;font-size:0.75rem;font-weight:600;cursor:pointer;">I\'m Interested</button>' : '<p style="font-size:0.75rem;color:#c0392b;font-weight:600;margin-top:6px;text-align:center;">This job has been filled</p>'}
+        </div>
+      `;
+      
+      L.marker([job.lat, job.lng], { icon: createPinIcon(color) })
+        .addTo(jobsMap)
+        .bindPopup(popup);
+    });
+    
+    // Force map to recalculate size
+    setTimeout(() => jobsMap.invalidateSize(), 100);
+  }, 200);
+}
+
+function expressInterestMap(jobId) {
+  const job = SAMPLE_JOBS.find(j => j.id === jobId);
+  if (job) {
+    job.interest_count++;
+    alert(`Interest registered for the job in ${job.region}. The farmer will be notified.`);
+  }
+}
+
+// =====================================================
+// NOTIFICATIONS
+// =====================================================
+let notifications = [];
+
+function loadDemoNotifications() {
+  notifications = [
+    { id: 1, type: 'new_job', title: 'New job near you', body: 'Red fox & European rabbit — Toodyay, WA. Within 2 weeks.', time: '2 hours ago', unread: true, jobRegion: 'Toodyay, WA' },
+    { id: 2, type: 'new_job', title: 'New job near you', body: 'Feral pig — Moora, WA. Within a month.', time: '5 hours ago', unread: true, jobRegion: 'Moora, WA' },
+    { id: 3, type: 'selected', title: 'You\'ve been selected!', body: 'A farmer in York, WA has selected you for a fox control job. Check your Selected tab for contact details.', time: '1 day ago', unread: false, jobRegion: 'York, WA' },
+    { id: 4, type: 'new_job', title: 'Job open nationally', body: 'Wild dogs — Geraldton, WA. This job has been open for 7+ days and is now available to all operators.', time: '2 days ago', unread: true, jobRegion: 'Geraldton, WA' },
+    { id: 5, type: 'reminder', title: 'Complete your training', body: 'You have 4 Foundation modules remaining. Complete them to unlock your shooting qualification.', time: '3 days ago', unread: false },
+  ];
+}
+
+function toggleNotifications(e) {
+  e.stopPropagation();
+  const dropdown = document.getElementById('notif-dropdown');
+  const isOpen = dropdown.classList.contains('open');
+  dropdown.classList.toggle('open');
+  
+  if (!isOpen) {
+    renderNotifications();
+    // Close on outside click
+    document.addEventListener('click', closeNotifOnOutsideClick);
+  } else {
+    document.removeEventListener('click', closeNotifOnOutsideClick);
+  }
+}
+
+function closeNotifOnOutsideClick(e) {
+  const dropdown = document.getElementById('notif-dropdown');
+  if (!dropdown.contains(e.target)) {
+    dropdown.classList.remove('open');
+    document.removeEventListener('click', closeNotifOnOutsideClick);
+  }
+}
+
+function renderNotifications() {
+  const listEl = document.getElementById('notif-list');
+  
+  if (notifications.length === 0) {
+    listEl.innerHTML = '<div class="notif-empty">No notifications</div>';
+    return;
+  }
+  
+  listEl.innerHTML = notifications.map(n => {
+    const icon = n.type === 'new_job' ? '📍' : n.type === 'selected' ? '✓' : '📋';
+    return `<div class="notif-item ${n.unread ? 'unread' : ''}" onclick="handleNotifClick(${n.id})">
+      <div class="notif-title">${icon} ${n.title}</div>
+      <div class="notif-body">${n.body}</div>
+      <div class="notif-time">${n.time}</div>
+    </div>`;
+  }).join('');
+}
+
+function handleNotifClick(notifId) {
+  const notif = notifications.find(n => n.id === notifId);
+  if (notif) {
+    notif.unread = false;
+    updateNotifBadge();
+    renderNotifications();
+    
+    // Close dropdown and navigate
+    document.getElementById('notif-dropdown').classList.remove('open');
+    
+    if (notif.type === 'new_job') {
+      showPage('dashboard');
+      // Scroll to jobs board
+    } else if (notif.type === 'selected') {
+      showPage('dashboard');
+    } else if (notif.type === 'reminder') {
+      showPage('dashboard');
+    }
+  }
+}
+
+function clearNotifications() {
+  notifications.forEach(n => n.unread = false);
+  updateNotifBadge();
+  renderNotifications();
+}
+
+function updateNotifBadge() {
+  const count = notifications.filter(n => n.unread).length;
+  const badge = document.getElementById('notif-count');
+  if (badge) {
+    badge.textContent = count;
+    badge.classList.toggle('hidden', count === 0);
+  }
+}
+
+// =====================================================
+// BACKEND NOTIFICATION SPEC (for Supabase implementation)
+// =====================================================
+/*
+NOTIFICATION SYSTEM — BACKEND IMPLEMENTATION NOTES
+
+Tables needed:
+  notifications (
+    id uuid primary key,
+    member_id uuid references aha_membership(member_id),
+    type text check (type in ('new_job', 'selected', 'job_updated', 'reminder', 'system')),
+    title text not null,
+    body text not null,
+    job_id uuid references jobs(id),
+    read boolean default false,
+    created_at timestamptz default now()
+  )
+
+Trigger: on_new_job_posted
+  When a farmer inserts a new job into the jobs table:
+  1. Query all active hunter profiles
+  2. For each hunter, calculate distance:
+     - Use PostGIS: ST_DWitbin(hunter_location, job_location, hunter_radius_km * 1000)
+     - Or simpler: Haversine formula in a Postgres function
+  3. If job is within hunter's service radius, insert a notification
+  4. Fire a Resend email to the hunter:
+     Subject: "New pest management job near you — [species] in [region]"
+     Body: Job description, species, urgency, link to TMC portal
+
+Trigger: on_job_age_7_days
+  Supabase cron job (pg_cron) runs daily:
+  1. Find all jobs where status = 'open' AND created_at < now() - interval '7 days'
+  2. Notify ALL active hunters regardless of radius
+  3. Update job status to 'open_national' (orange pin)
+  4. Email all hunters: "Job open nationally — [species] in [region]"
+
+Trigger: on_hunter_selected
+  When a farmer selects a hunter (job status changes to 'filled'):
+  1. Insert notification for the selected hunter
+  2. Email the hunter: "You've been selected for a job in [region]"
+  3. Include farmer contact details in the email
+  4. Also email the farmer with the hunter's contact details
+
+Trigger: on_job_filled_3_days
+  Supabase cron job runs daily:
+  1. Find all jobs where status = 'filled' AND filled_at < now() - interval '3 days'
+  2. Update status to 'closed' (pin disappears from map)
+
+Email provider: Resend (already in use from previous TMC builds)
+  - API key stored in Supabase secrets
+  - Edge Function handles email sending
+  - Templates for each notification type
+
+Database columns needed on existing tables:
+  - hunter_profiles: add latitude, longitude (for distance calc)
+  - jobs: add latitude, longitude, status ('open', 'open_national', 'filled', 'closed'), filled_at
+*/
+
+// =====================================================
+// TABS
+// =====================================================
+function switchTab(tabBtn, contentId) {
+  tabBtn.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tabBtn.classList.add('active');
+  const card = tabBtn.closest('.card');
+  card.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+  document.getElementById(contentId)?.classList.add('active');
+}
+
+// =====================================================
+// NAVIGATION
+// =====================================================
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId)?.classList.add('active');
+  window.scrollTo(0, 0);
+  
+  // Init map when map page is shown
+  if (pageId === 'map') {
+    setTimeout(() => initMap(), 100);
+  }
+  
+  const nav = document.getElementById('nav-links');
+  if (pageId === 'gate' || pageId === 'signup') {
+    nav.innerHTML = '<button class="nav-btn" onclick="showPage(\'gate\')">Sign In</button>';
+  } else {
+    const unreadCount = notifications.filter(n => n.unread).length;
+    nav.innerHTML = `
+      <button class="notif-btn" onclick="toggleNotifications(event)">🔔<span class="notif-badge ${unreadCount === 0 ? 'hidden' : ''}" id="notif-count">${unreadCount}</span></button>
+      <button class="nav-btn ${pageId==='dashboard'?'active':''}" onclick="showPage('dashboard')">Dashboard</button>
+      <button class="nav-btn ${pageId==='map'?'active':''}" onclick="showPage('map')">Map</button>
+      <button class="nav-btn ${pageId==='profile-builder'?'active':''}" onclick="showPage('profile-builder')">Profile</button>
+      <button class="nav-btn" onclick="showPage('gate')">Sign Out</button>
+    `;
+  }
+}
+
+// =====================================================
+// STATS
+// =====================================================
+function updateStats() {
+  document.getElementById('stat-training').textContent = `${completedModules.length}/6`;
+  
+  const hbStat = document.getElementById('stat-handbook');
+  if (handbookComplete) { hbStat.textContent = '✓'; hbStat.style.color = 'var(--success)'; hbStat.style.fontSize = '1.5rem'; }
+  else if (completedModules.length === 6) { hbStat.textContent = '→'; hbStat.style.color = 'var(--gold)'; hbStat.style.fontSize = '1.5rem'; }
+  else { hbStat.textContent = '—'; }
+  
+  const shootStat = document.getElementById('stat-shooting');
+  const shootStatus = currentMember?.shooting_test_status || 'not_submitted';
+  if (shootStatus === 'approved') { shootStat.textContent = '✓'; shootStat.style.color = 'var(--success)'; shootStat.style.fontSize = '1.5rem'; }
+  else if (shootStatus === 'pending') { shootStat.textContent = '⏳'; shootStat.style.fontSize = '1.5rem'; }
+  else if (handbookComplete) { shootStat.textContent = '→'; shootStat.style.color = 'var(--gold)'; shootStat.style.fontSize = '1.5rem'; }
+  else { shootStat.textContent = '—'; }
+  
+  const profStat = document.getElementById('stat-profile');
+  if (currentMember?.certificate_number) { profStat.textContent = 'Live'; profStat.style.color = 'var(--success)'; }
+  else { profStat.textContent = 'Incomplete'; profStat.style.color = 'var(--gold)'; }
+}
+</script>
+</body>
+</html>

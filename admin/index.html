@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AHA / TMC — Admin Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green-dark:#2d3327;--green-mid:#4a6741;--green-hover:#3d5635;--olive:#6b7c59;
+  --cream:#f5f4ed;--cream-lt:#faf9f7;--beige:#c9b896;--beige-stone:#e8e6dd;--green-soft:#e8f5e9;
+  --text-dark:#1a1a16;--text-mid:#4a4a3a;--text-lt:#6b7265;--white:#ffffff;--border:#d4d0c8;
+  --red:#c0392b;--red-bg:#fdf2f2;--gold:#b8860b;--gold-bg:#fdf8e8;
+  --success:#27ae60;--success-bg:#eafaf1;--blue:#2980b9;--blue-bg:#e8f4f8;
+  --shadow:0 2px 8px rgba(0,0,0,0.08);--shadow-lg:0 4px 16px rgba(0,0,0,0.12);--radius:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;color:var(--text-dark);background:var(--cream-lt);min-height:100vh;display:flex;}
+
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--green-dark);color:var(--cream);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100;display:flex;flex-direction:column;}
+.sidebar-brand{padding:1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,0.1);}
+.sidebar-brand h2{font-size:0.9375rem;margin-bottom:0.15rem;}
+.sidebar-brand p{font-size:0.7rem;color:var(--beige);}
+.sidebar-nav{flex:1;padding:0.75rem 0;}
+.sidebar-item{display:flex;align-items:center;gap:0.625rem;padding:0.625rem 1rem;color:rgba(255,255,255,0.7);cursor:pointer;font-size:0.8125rem;font-weight:500;transition:all 0.15s;border-left:3px solid transparent;}
+.sidebar-item:hover{background:rgba(255,255,255,0.05);color:var(--cream);}
+.sidebar-item.active{background:rgba(255,255,255,0.1);color:var(--white);border-left-color:var(--gold);}
+.sidebar-item .icon{width:20px;text-align:center;font-size:0.875rem;}
+.sidebar-item .badge-count{margin-left:auto;background:var(--red);color:var(--white);font-size:0.6rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:2rem;}
+.sidebar-footer{padding:1rem;border-top:1px solid rgba(255,255,255,0.1);font-size:0.7rem;color:rgba(255,255,255,0.4);}
+
+/* MAIN */
+.main{margin-left:220px;flex:1;min-height:100vh;}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;}
+.topbar h1{font-size:1.125rem;}
+.topbar-actions{display:flex;gap:0.5rem;align-items:center;}
+.content{padding:1.5rem;}
+
+/* PAGE */
+.page{display:none;}.page.active{display:block;}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow);}
+.card-header{font-size:0.9375rem;font-weight:600;margin-bottom:0.75rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:1.25rem;}
+.stat{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow);}
+.stat-num{font-size:1.75rem;font-weight:700;color:var(--green-mid);}
+.stat-label{font-size:0.7rem;color:var(--text-lt);text-transform:uppercase;letter-spacing:0.04em;margin-top:0.15rem;}
+.stat-num.warn{color:var(--gold);}
+.stat-num.danger{color:var(--red);}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:0.8125rem;}
+.data-table th{text-align:left;padding:0.5rem 0.75rem;border-bottom:2px solid var(--border);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-lt);font-weight:600;}
+.data-table td{padding:0.625rem 0.75rem;border-bottom:1px solid var(--cream);vertical-align:middle;}
+.data-table tr:hover{background:var(--cream);}
+.data-table tr{cursor:pointer;}
+
+/* SEARCH */
+.search-bar{display:flex;gap:0.5rem;margin-bottom:1rem;}
+.search-bar input{flex:1;padding:0.5rem 0.75rem;border:1px solid var(--border);border-radius:6px;font-size:0.875rem;font-family:inherit;}
+.search-bar input:focus{outline:none;border-color:var(--green-mid);}
+.search-bar select{padding:0.5rem 0.75rem;border:1px solid var(--border);border-radius:6px;font-size:0.8125rem;font-family:inherit;background:var(--white);}
+
+/* FORMS */
+.fg{margin-bottom:0.875rem;}
+.fg label{display:block;font-size:0.75rem;font-weight:600;margin-bottom:0.25rem;color:var(--text-mid);}
+.fg input,.fg select,.fg textarea{width:100%;padding:0.5rem 0.625rem;border:1px solid var(--border);border-radius:4px;font-size:0.8125rem;font-family:inherit;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--green-mid);}
+.fg textarea{min-height:70px;resize:vertical;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.625rem;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.3rem;padding:0.45rem 0.875rem;border:none;border-radius:4px;font-size:0.8125rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;}
+.btn-primary{background:var(--green-mid);color:var(--white);}.btn-primary:hover{background:var(--green-hover);}
+.btn-secondary{background:var(--beige-stone);color:var(--text-dark);}.btn-secondary:hover{background:var(--beige);}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--text-mid);}.btn-outline:hover{background:var(--cream);}
+.btn-gold{background:var(--gold);color:var(--white);}.btn-gold:hover{background:#a07608;}
+.btn-danger{background:var(--red);color:var(--white);}.btn-danger:hover{background:#a93226;}
+.btn-success{background:var(--success);color:var(--white);}.btn-success:hover{background:#219a52;}
+.btn-sm{padding:0.3rem 0.625rem;font-size:0.75rem;}
+.btn-full{width:100%;}
+
+/* STATUS BADGES */
+.status{display:inline-block;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;}
+.status-active{background:var(--success-bg);color:var(--success);}
+.status-pending{background:var(--gold-bg);color:var(--gold);}
+.status-lapsed{background:var(--red-bg);color:var(--red);}
+.status-cancelled{background:var(--beige-stone);color:var(--text-lt);}
+.status-approved{background:var(--success-bg);color:var(--success);}
+.status-rejected{background:var(--red-bg);color:var(--red);}
+.status-review{background:var(--blue-bg);color:var(--blue);}
+.status-on{background:var(--success-bg);color:var(--success);}
+.status-off{background:var(--red-bg);color:var(--red);}
+
+/* TOGGLE */
+.toggle{position:relative;width:40px;height:22px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;top:0;left:0;right:0;bottom:0;background:var(--border);border-radius:22px;transition:0.3s;}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:var(--white);border-radius:50%;transition:0.3s;}
+.toggle input:checked+.toggle-slider{background:var(--success);}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px);}
+
+/* MODAL */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--white);border-radius:var(--radius);padding:1.5rem;max-width:560px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.modal-header h2{font-size:1.0625rem;}
+.modal-close{background:none;border:none;font-size:1.25rem;cursor:pointer;color:var(--text-lt);padding:0.25rem;}
+.modal-actions{display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--border);}
+
+/* ALERTS */
+.alert{padding:0.625rem 0.875rem;border-radius:6px;margin-bottom:0.75rem;font-size:0.8rem;line-height:1.4;}
+.alert-info{background:var(--blue-bg);color:#2c6e8a;border:1px solid #b8dce8;}
+.alert-success{background:var(--success-bg);color:#1e7e34;border:1px solid #a3d9b1;}
+.alert-warning{background:var(--gold-bg);color:#7d6608;border:1px solid #e8d48a;}
+
+/* REVIEW CARD */
+.review-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:0.75rem;box-shadow:var(--shadow);}
+.review-card .review-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;}
+.review-img{max-width:100%;max-height:300px;border-radius:6px;border:1px solid var(--border);margin-bottom:0.75rem;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;}
+  .sidebar-brand{display:none;}
+  .sidebar-nav{display:flex;padding:0;overflow-x:auto;}
+  .sidebar-item{white-space:nowrap;border-left:none;border-bottom:3px solid transparent;padding:0.75rem;}
+  .sidebar-item.active{border-bottom-color:var(--gold);}
+  .sidebar-footer{display:none;}
+  .main{margin-left:0;}
+  body{flex-direction:column;}
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <h2>AHA / TMC Admin</h2>
+    <p>Management Portal</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="sidebar-item active" onclick="showAdmin('dashboard')"><span class="icon">📊</span>Dashboard</div>
+    <div class="sidebar-item" onclick="showAdmin('members')"><span class="icon">👤</span>AHA Members</div>
+    <div class="sidebar-item" onclick="showAdmin('hunters')"><span class="icon">🎯</span>Hunter Profiles</div>
+    <div class="sidebar-item" onclick="showAdmin('farmers')"><span class="icon">🌾</span>Farmer Profiles</div>
+    <div class="sidebar-item" onclick="showAdmin('shooting')"><span class="icon">🔍</span>Shooting Reviews<span class="badge-count" id="shooting-badge">2</span></div>
+    <div class="sidebar-item" onclick="showAdmin('jobs')"><span class="icon">📋</span>Jobs</div>
+    <div class="sidebar-item" onclick="showAdmin('payments')"><span class="icon">💳</span>Payments</div>
+    <div class="sidebar-item" onclick="showAdmin('quick')"><span class="icon">⚡</span>Quick Actions</div>
+  </div>
+  <div class="sidebar-footer">
+    Logged in as David Mynott<br>
+    david@australianhuntingassociation.com.au
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+  <div class="topbar">
+    <h1 id="page-title">Dashboard</h1>
+    <div class="topbar-actions">
+      <span style="font-size:0.75rem;color:var(--text-lt);" id="topbar-date"></span>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page active" id="admin-dashboard">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-num">12</div><div class="stat-label">AHA Members</div></div>
+        <div class="stat"><div class="stat-num">8</div><div class="stat-label">TMC Hunters</div></div>
+        <div class="stat"><div class="stat-num">5</div><div class="stat-label">Farmers</div></div>
+        <div class="stat"><div class="stat-num warn">3</div><div class="stat-label">Pending Payment</div></div>
+        <div class="stat"><div class="stat-num warn">2</div><div class="stat-label">Shooting Reviews</div></div>
+        <div class="stat"><div class="stat-num">6</div><div class="stat-label">Active Jobs</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="card">
+          <div class="card-header">Pending Actions</div>
+          <div style="font-size:0.8125rem;">
+            <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--cream);cursor:pointer;" onclick="showAdmin('payments')">
+              <span>💳 3 members awaiting payment confirmation</span>
+              <span class="status status-pending">Action</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--cream);cursor:pointer;" onclick="showAdmin('shooting')">
+              <span>🔍 2 shooting qualifications to review</span>
+              <span class="status status-review">Review</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:0.5rem 0;cursor:pointer;" onclick="showAdmin('hunters')">
+              <span>👤 1 new hunter profile to check</span>
+              <span class="status status-review">Review</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Recent Activity</div>
+          <div style="font-size:0.8125rem;color:var(--text-mid);">
+            <div style="padding:0.375rem 0;border-bottom:1px solid var(--cream);">Sam Brewer completed Foundation training <span style="color:var(--text-lt);font-size:0.7rem;">2h ago</span></div>
+            <div style="padding:0.375rem 0;border-bottom:1px solid var(--cream);">New farmer signup: Mark Henderson, Toodyay <span style="color:var(--text-lt);font-size:0.7rem;">5h ago</span></div>
+            <div style="padding:0.375rem 0;border-bottom:1px solid var(--cream);">Kate Lawson submitted shooting qualification <span style="color:var(--text-lt);font-size:0.7rem;">1d ago</span></div>
+            <div style="padding:0.375rem 0;">Tom Richardson joined AHA <span style="color:var(--text-lt);font-size:0.7rem;">2d ago</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== AHA MEMBERS ===== -->
+    <div class="page" id="admin-members">
+      <div class="search-bar">
+        <input type="text" placeholder="Search by name, email, or member number..." id="member-search" oninput="filterMembers()">
+        <select id="member-filter" onchange="filterMembers()">
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="pending_payment">Pending Payment</option>
+          <option value="lapsed">Lapsed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="openModal('add-member')">+ Add Member</button>
+      </div>
+      <div class="card" style="padding:0;overflow-x:auto;">
+        <table class="data-table" id="members-table">
+          <thead><tr><th>Member #</th><th>Name</th><th>Email</th><th>State</th><th>AHA Status</th><th>TMC Access</th><th>Training</th><th>Joined</th></tr></thead>
+          <tbody id="members-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== HUNTER PROFILES ===== -->
+    <div class="page" id="admin-hunters">
+      <div class="search-bar">
+        <input type="text" placeholder="Search hunters..." oninput="filterHunters()">
+        <select onchange="filterHunters()">
+          <option value="">All</option>
+          <option>Profile live</option>
+          <option>Profile incomplete</option>
+          <option>Flagged</option>
+        </select>
+      </div>
+      <div class="card" style="padding:0;overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Location</th><th>Radius</th><th>Species</th><th>Licence</th><th>Insurance</th><th>Profile</th><th>TMC</th><th></th></tr></thead>
+          <tbody>
+            <tr onclick="openModal('edit-hunter')"><td>Dave Mitchell</td><td>Northam, WA</td><td>400km</td><td>Fox, Pig, Rabbit, Cat</td><td><span class="status status-active">✓ Verified</span></td><td><span class="status status-active">Individual</span></td><td><span class="status status-active">Live</span></td><td><span class="status status-on">On</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+            <tr onclick="openModal('edit-hunter')"><td>Sam Brewer</td><td>York, WA</td><td>200km</td><td>Fox, Wild dogs, Pig, Goat</td><td><span class="status status-active">✓ Verified</span></td><td><span class="status status-active">Individual</span></td><td><span class="status status-active">Live</span></td><td><span class="status status-on">On</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+            <tr onclick="openModal('edit-hunter')"><td>Kate Lawson</td><td>Geraldton, WA</td><td>600km</td><td>Pig, Goat, Fox, Roos, Dogs</td><td><span class="status status-review">📷 Review</span></td><td><span class="status status-pending">SSAA</span></td><td><span class="status status-review">Review</span></td><td><span class="status status-on">On</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+            <tr onclick="openModal('edit-hunter')"><td>Tom Richardson</td><td>Merredin, WA</td><td>400km</td><td>Fox, Rabbit, Roos, Emus</td><td><span class="status status-pending">Not uploaded</span></td><td><span class="status status-cancelled">None</span></td><td><span class="status status-pending">Incomplete</span></td><td><span class="status status-off">Off</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== FARMER PROFILES ===== -->
+    <div class="page" id="admin-farmers">
+      <div class="search-bar">
+        <input type="text" placeholder="Search farmers...">
+        <button class="btn btn-primary btn-sm" onclick="openModal('add-farmer')">+ Add Farmer</button>
+      </div>
+      <div class="card" style="padding:0;overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Property</th><th>Region</th><th>Phone</th><th>Jobs Posted</th><th>Active</th><th></th></tr></thead>
+          <tbody>
+            <tr onclick="openModal('edit-farmer')"><td>Mark Henderson</td><td>Henderson Station</td><td>Toodyay, WA</td><td>0418 999 888</td><td>3</td><td><span class="status status-on">On</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+            <tr onclick="openModal('edit-farmer')"><td>Sarah Williams</td><td>Willowbrook Farm</td><td>Dubbo, NSW</td><td>0432 111 222</td><td>1</td><td><span class="status status-on">On</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+            <tr onclick="openModal('edit-farmer')"><td>James Cooper</td><td>Cooper Pastoral Co</td><td>Moora, WA</td><td>0445 333 444</td><td>2</td><td><span class="status status-on">On</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+            <tr onclick="openModal('edit-farmer')"><td>Rob Taylor</td><td>Taylor Downs</td><td>Longreach, QLD</td><td>0456 555 666</td><td>1</td><td><span class="status status-on">On</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+            <tr onclick="openModal('edit-farmer')"><td>Wendy Clarke</td><td>Clarke Family Trust</td><td>Hamilton, VIC</td><td>0467 777 888</td><td>0</td><td><span class="status status-on">On</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== SHOOTING REVIEWS ===== -->
+    <div class="page" id="admin-shooting">
+      <div class="alert alert-info">Review shooting qualification submissions. Standard: 5 shots within 75mm at 100m. Approve, reject, or query the submission.</div>
+      
+      <div class="review-card">
+        <div class="review-header">
+          <div>
+            <h3 style="font-size:1rem;">Kate Lawson</h3>
+            <p style="font-size:0.75rem;color:var(--text-lt);">AHA-2026-00004 · Submitted 1 day ago · Range shoot</p>
+          </div>
+          <span class="status status-review">Pending Review</span>
+        </div>
+        <div style="background:var(--cream);border-radius:6px;padding:3rem;text-align:center;margin-bottom:0.75rem;color:var(--text-lt);font-size:0.875rem;">
+          📷 [Target photo would display here]<br><br>
+          <span style="font-size:0.75rem;">In production: uploaded image from member's portal</span>
+        </div>
+        <p style="font-size:0.8125rem;color:var(--text-mid);margin-bottom:0.75rem;"><strong>Notes from member:</strong> Shot at Whiteman Park range, 100m, prone with bipod. Five shots with .308 Win.</p>
+        <div class="fg"><label>Admin notes</label><textarea placeholder="Add review notes..."></textarea></div>
+        <div style="display:flex;gap:0.5rem;">
+          <button class="btn btn-success" onclick="approveShoot(this)">✓ Approve</button>
+          <button class="btn btn-danger" onclick="rejectShoot(this)">✗ Reject</button>
+          <button class="btn btn-gold" onclick="queryShoot(this)">? Query — Ask for more info</button>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div>
+            <h3 style="font-size:1rem;">Tom Richardson</h3>
+            <p style="font-size:0.75rem;color:var(--text-lt);">AHA-2026-00007 · Submitted 3 days ago · Virtual-Shot</p>
+          </div>
+          <span class="status status-review">Pending Review</span>
+        </div>
+        <div style="background:var(--cream);border-radius:6px;padding:3rem;text-align:center;margin-bottom:0.75rem;color:var(--text-lt);font-size:0.875rem;">
+          📷 [Virtual-Shot screenshot would display here]
+        </div>
+        <p style="font-size:0.8125rem;color:var(--text-mid);margin-bottom:0.75rem;"><strong>Notes from member:</strong> Virtual-Shot dry fire, 100m simulation. Used the app on my phone with the tripod mount.</p>
+        <div class="fg"><label>Admin notes</label><textarea placeholder="Add review notes..."></textarea></div>
+        <div style="display:flex;gap:0.5rem;">
+          <button class="btn btn-success" onclick="approveShoot(this)">✓ Approve</button>
+          <button class="btn btn-danger" onclick="rejectShoot(this)">✗ Reject</button>
+          <button class="btn btn-gold" onclick="queryShoot(this)">? Query</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== JOBS ===== -->
+    <div class="page" id="admin-jobs">
+      <div class="search-bar">
+        <input type="text" placeholder="Search jobs by region or species...">
+        <select><option value="">All statuses</option><option>Open</option><option>Has interest</option><option>Filled</option><option>Closed</option><option>National (7+ days)</option></select>
+      </div>
+      <div class="card" style="padding:0;overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr><th>Region</th><th>Species</th><th>Farmer</th><th>Urgency</th><th>Interested</th><th>Status</th><th>Posted</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>Toodyay, WA</td><td>Fox, Rabbit</td><td>M. Henderson</td><td>2 weeks</td><td>2</td><td><span class="status status-review">Active</span></td><td>2d ago</td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+            <tr><td>Moora, WA</td><td>Feral pig</td><td>J. Cooper</td><td>1 month</td><td>3</td><td><span class="status status-review">Active</span></td><td>5d ago</td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+            <tr><td>York, WA</td><td>Red fox</td><td>S. Williams</td><td>Flexible</td><td>1</td><td><span class="status status-active">Filled</span></td><td>8d ago</td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+            <tr><td>Geraldton, WA</td><td>Wild dogs</td><td>R. Taylor</td><td>Urgent</td><td>0</td><td><span class="status status-pending">National</span></td><td>9d ago</td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+            <tr><td>Merredin, WA</td><td>Kangaroos</td><td>M. Henderson</td><td>2 weeks</td><td>1</td><td><span class="status status-review">Active</span></td><td>1d ago</td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+            <tr><td>Kalbarri, WA</td><td>Feral goat</td><td>R. Taylor</td><td>1 month</td><td>3</td><td><span class="status status-pending">National</span></td><td>10d ago</td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== PAYMENTS ===== -->
+    <div class="page" id="admin-payments">
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="stat"><div class="stat-num">$2,376</div><div class="stat-label">Total Revenue</div></div>
+        <div class="stat"><div class="stat-num">12</div><div class="stat-label">Paid Members</div></div>
+        <div class="stat"><div class="stat-num warn">3</div><div class="stat-label">Pending</div></div>
+        <div class="stat"><div class="stat-num danger">1</div><div class="stat-label">Failed</div></div>
+      </div>
+
+      <div class="card" style="padding:0;overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr><th>Member</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>David Mynott</td><td>$198.00</td><td>Manual</td><td>Test activation</td><td><span class="status status-active">Paid</span></td><td>24 Apr 2026</td><td></td></tr>
+            <tr><td>Sam Brewer</td><td>$198.00</td><td>Square</td><td>sq_txn_8823</td><td><span class="status status-active">Paid</span></td><td>23 Apr 2026</td><td></td></tr>
+            <tr><td>Kate Lawson</td><td>$198.00</td><td>Square</td><td>sq_txn_8845</td><td><span class="status status-active">Paid</span></td><td>22 Apr 2026</td><td></td></tr>
+            <tr><td>Tom Richardson</td><td>$198.00</td><td>—</td><td>—</td><td><span class="status status-pending">Pending</span></td><td>—</td><td><button class="btn btn-success btn-sm" onclick="manualActivate(this,'Tom Richardson')">Activate</button></td></tr>
+            <tr><td>Jake Morrison</td><td>$198.00</td><td>—</td><td>—</td><td><span class="status status-pending">Pending</span></td><td>—</td><td><button class="btn btn-success btn-sm" onclick="manualActivate(this,'Jake Morrison')">Activate</button></td></tr>
+            <tr><td>Lisa Chen</td><td>$198.00</td><td>Square</td><td>sq_txn_FAIL</td><td><span class="status status-lapsed">Failed</span></td><td>21 Apr 2026</td><td><button class="btn btn-gold btn-sm">Retry</button></td></tr>
+            <tr><td>Mike Patel</td><td>$198.00</td><td>—</td><td>—</td><td><span class="status status-pending">Pending</span></td><td>—</td><td><button class="btn btn-success btn-sm" onclick="manualActivate(this,'Mike Patel')">Activate</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== QUICK ACTIONS ===== -->
+    <div class="page" id="admin-quick">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="card">
+          <div class="card-header">Activate Membership</div>
+          <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.75rem;">Manually activate a member after confirming payment.</p>
+          <div class="fg"><label>Member email or name</label><input type="text" placeholder="Search member..." id="quick-activate-search"></div>
+          <div class="fg"><label>Payment reference</label><input type="text" placeholder="e.g. bank transfer ref, Square txn ID" id="quick-activate-ref"></div>
+          <button class="btn btn-success btn-full" onclick="quickActivate()">Activate & Generate Member Number</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Look Up Member</div>
+          <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.75rem;">Find a member by number, email, or name.</p>
+          <div class="fg"><label>Search</label><input type="text" placeholder="AHA-2026-00001 or email or name..." id="quick-lookup"></div>
+          <button class="btn btn-primary btn-full" onclick="quickLookup()">Look Up</button>
+          <div id="quick-lookup-result" style="margin-top:0.75rem;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Grant TMC Access</div>
+          <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.75rem;">Give a member TMC platform access without requiring AHA payment (e.g. first-year free access).</p>
+          <div class="fg"><label>Member email or number</label><input type="text" placeholder="Search member..."></div>
+          <div class="fg"><label>Access period</label><select><option>1 year</option><option>6 months</option><option>3 months</option><option>Permanent</option></select></div>
+          <button class="btn btn-gold btn-full" onclick="alert('TMC access granted. Member can now log into The Marksmen Co portal.')">Grant TMC Access</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Suspend / Remove Member</div>
+          <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.75rem;">Suspend or permanently remove a member from AHA and TMC.</p>
+          <div class="fg"><label>Member email or number</label><input type="text" placeholder="Search member..."></div>
+          <div class="fg"><label>Reason</label><textarea placeholder="Reason for suspension/removal..."></textarea></div>
+          <div style="display:flex;gap:0.5rem;">
+            <button class="btn btn-gold" onclick="alert('Member suspended. TMC profile hidden. They have been notified.')">Suspend</button>
+            <button class="btn btn-danger" onclick="if(confirm('Permanently remove this member? This cannot be undone.')){alert('Member permanently removed from AHA and TMC.')}">Remove Permanently</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MEMBER EDIT MODAL ===== -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()" id="modal-content">
+    <!-- Populated by JS -->
+  </div>
+</div>
+
+<script>
+// =====================================================
+// SAMPLE DATA
+// =====================================================
+const MEMBERS = [
+  { num:'AHA-2026-00001', name:'David Mynott', email:'david@australianhuntingassociation.com.au', phone:'0418186193', state:'WA', status:'active', tmc:true, training:'6/6', joined:'24 Apr 2026', payment:'Paid' },
+  { num:'AHA-2026-00002', name:'Sam Brewer', email:'sam.brewer@email.com.au', phone:'0423456789', state:'WA', status:'active', tmc:true, training:'6/6', joined:'23 Apr 2026', payment:'Paid' },
+  { num:'AHA-2026-00003', name:'Dave Mitchell', email:'dave.m@email.com.au', phone:'0412345678', state:'WA', status:'active', tmc:true, training:'6/6', joined:'22 Apr 2026', payment:'Paid' },
+  { num:'AHA-2026-00004', name:'Kate Lawson', email:'kate.l@email.com.au', phone:'0434567890', state:'WA', status:'active', tmc:true, training:'5/6', joined:'22 Apr 2026', payment:'Paid' },
+  { num:'—', name:'Tom Richardson', email:'tom.r@email.com.au', phone:'0445678901', state:'WA', status:'pending_payment', tmc:false, training:'0/6', joined:'24 Apr 2026', payment:'Pending' },
+  { num:'—', name:'Jake Morrison', email:'jake.m@email.com.au', phone:'0456789012', state:'WA', status:'pending_payment', tmc:false, training:'0/6', joined:'23 Apr 2026', payment:'Pending' },
+  { num:'AHA-2026-00005', name:'Lisa Chen', email:'lisa.c@email.com.au', phone:'0467890123', state:'NSW', status:'active', tmc:false, training:'0/6', joined:'21 Apr 2026', payment:'Failed' },
+  { num:'—', name:'Mike Patel', email:'mike.p@email.com.au', phone:'0478901234', state:'VIC', status:'pending_payment', tmc:false, training:'0/6', joined:'20 Apr 2026', payment:'Pending' },
+  { num:'AHA-2026-00006', name:'Sarah Jones', email:'sarah.j@email.com.au', phone:'0489012345', state:'QLD', status:'active', tmc:false, training:'2/6', joined:'19 Apr 2026', payment:'Paid' },
+  { num:'AHA-2026-00007', name:'Chris Walker', email:'chris.w@email.com.au', phone:'0490123456', state:'WA', status:'lapsed', tmc:false, training:'4/6', joined:'15 Mar 2026', payment:'Lapsed' },
+  { num:'AHA-2026-00008', name:'Emma Brown', email:'emma.b@email.com.au', phone:'0401234567', state:'SA', status:'active', tmc:false, training:'0/6', joined:'18 Apr 2026', payment:'Paid' },
+  { num:'AHA-2026-00009', name:'Ryan Clarke', email:'ryan.c@email.com.au', phone:'0412345670', state:'WA', status:'cancelled', tmc:false, training:'3/6', joined:'10 Mar 2026', payment:'Refunded' },
+];
+
+// =====================================================
+// NAVIGATION
+// =====================================================
+function showAdmin(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('admin-' + pageId)?.classList.add('active');
+  
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  event.currentTarget?.classList.add('active');
+  
+  const titles = { dashboard:'Dashboard', members:'AHA Members', hunters:'Hunter Profiles', farmers:'Farmer Profiles', shooting:'Shooting Reviews', jobs:'Jobs', payments:'Payments', quick:'Quick Actions' };
+  document.getElementById('page-title').textContent = titles[pageId] || pageId;
+  
+  if (pageId === 'members') renderMembers();
+}
+
+// =====================================================
+// MEMBERS TABLE
+// =====================================================
+function renderMembers(filter, search) {
+  const tbody = document.getElementById('members-tbody');
+  let filtered = MEMBERS;
+  
+  if (filter) filtered = filtered.filter(m => m.status === filter);
+  if (search) {
+    const s = search.toLowerCase();
+    filtered = filtered.filter(m => m.name.toLowerCase().includes(s) || m.email.toLowerCase().includes(s) || m.num.toLowerCase().includes(s));
+  }
+  
+  tbody.innerHTML = filtered.map(m => {
+    const statusCls = m.status === 'active' ? 'status-active' : m.status === 'pending_payment' ? 'status-pending' : m.status === 'lapsed' ? 'status-lapsed' : 'status-cancelled';
+    const statusLabel = m.status === 'pending_payment' ? 'Pending' : m.status.charAt(0).toUpperCase() + m.status.slice(1);
+    const tmcCls = m.tmc ? 'status-on' : 'status-off';
+    return `<tr onclick="openMemberModal('${m.email}')">
+      <td style="font-weight:600;font-size:0.75rem;">${m.num}</td>
+      <td>${m.name}</td>
+      <td style="font-size:0.75rem;">${m.email}</td>
+      <td>${m.state}</td>
+      <td><span class="status ${statusCls}">${statusLabel}</span></td>
+      <td><span class="status ${tmcCls}">${m.tmc ? 'On' : 'Off'}</span></td>
+      <td>${m.training}</td>
+      <td style="font-size:0.75rem;">${m.joined}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterMembers() {
+  const search = document.getElementById('member-search').value;
+  const filter = document.getElementById('member-filter').value;
+  renderMembers(filter || null, search || null);
+}
+
+// =====================================================
+// MODALS
+// =====================================================
+function openModal(type) {
+  const modal = document.getElementById('modal-content');
+  const overlay = document.getElementById('modal-overlay');
+  
+  if (type === 'edit-hunter') {
+    modal.innerHTML = `
+      <div class="modal-header"><h2>Edit Hunter Profile</h2><button class="modal-close" onclick="closeModal()">×</button></div>
+      
+      <div class="card" style="border:2px solid var(--gold);margin-bottom:1rem;">
+        <div class="card-header" style="border-bottom-color:var(--gold);"><span style="color:var(--gold);">🔒 Firearms Licence Verification</span><span class="status status-active">Verified</span></div>
+        <div style="background:var(--cream);border-radius:6px;padding:2rem;text-align:center;margin-bottom:0.75rem;">
+          📷 [Licence photo uploaded by member]<br><br>
+          <span style="font-size:0.75rem;color:var(--text-lt);">In production: the actual licence image uploaded through the hunter portal displays here</span>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Licence Number</label><input type="text" value="10054321"></div>
+          <div class="fg"><label>State of Issue</label><select><option selected>WA</option><option>NSW</option><option>VIC</option><option>QLD</option><option>SA</option><option>TAS</option><option>NT</option><option>ACT</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Licence Expiry</label><input type="date" value="2027-06-30"></div>
+          <div class="fg"><label>Licence Verified</label>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              <span style="font-size:0.8125rem;">Admin has verified licence photo matches details</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row"><div class="fg"><label>Display Name</label><input type="text" value="Dave Mitchell"></div><div class="fg"><label>Location</label><input type="text" value="Northam, WA"></div></div>
+      <div class="form-row"><div class="fg"><label>Service Radius</label><select><option>200 km</option><option selected>400 km</option><option>600 km</option><option>800 km</option><option>1000 km</option></select></div><div class="fg"><label>Availability</label><select><option selected>Available</option><option>Limited</option><option>Not available</option></select></div></div>
+      <div class="fg"><label>Bio</label><textarea>Five years doing pest management in the central wheatbelt. Mostly foxes and rabbits, comfortable with pig work in scrub country further east.</textarea></div>
+      <div class="fg"><label>Insurance</label><select><option selected>Individual policy</option><option>SSAA</option><option>None declared</option></select></div>
+      <div class="form-row"><div class="fg"><label>Phone</label><input type="tel" value="0412 345 678"></div><div class="fg"><label>Email</label><input type="email" value="dave.m@email.com.au"></div></div>
+      <div class="fg"><label>TMC Platform Access</label><div style="display:flex;align-items:center;gap:0.75rem;"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label><span style="font-size:0.8125rem;">Enabled — profile visible to farmers</span></div></div>
+      <div class="fg"><label>Admin Notes</label><textarea placeholder="Internal notes..."></textarea></div>
+      <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal()">Save Changes</button></div>
+    `;
+  } else if (type === 'edit-farmer') {
+    modal.innerHTML = `
+      <div class="modal-header"><h2>Edit Farmer Profile</h2><button class="modal-close" onclick="closeModal()">×</button></div>
+      <div class="form-row"><div class="fg"><label>First Name</label><input type="text" value="Mark"></div><div class="fg"><label>Last Name</label><input type="text" value="Henderson"></div></div>
+      <div class="fg"><label>Property Name</label><input type="text" value="Henderson Station"></div>
+      <div class="form-row"><div class="fg"><label>Region</label><input type="text" value="Toodyay, WA"></div><div class="fg"><label>State</label><select><option selected>WA</option><option>NSW</option><option>VIC</option><option>QLD</option><option>SA</option><option>TAS</option><option>NT</option><option>ACT</option></select></div></div>
+      <div class="form-row"><div class="fg"><label>Phone</label><input type="tel" value="0418 999 888"></div><div class="fg"><label>Email</label><input type="email" value="mark@hendersonstation.com.au"></div></div>
+      <div class="fg"><label>Property Size</label><select><option>Under 100 ha</option><option>100–500 ha</option><option selected>500–2,000 ha</option><option>2,000–10,000 ha</option><option>Over 10,000 ha</option></select></div>
+      <div class="fg"><label>Account Active</label><div style="display:flex;align-items:center;gap:0.75rem;"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label><span style="font-size:0.8125rem;">Enabled — can post jobs and select hunters</span></div></div>
+      <div class="fg"><label>Admin Notes</label><textarea placeholder="Internal notes..."></textarea></div>
+      <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal()">Save Changes</button></div>
+    `;
+  } else if (type === 'add-member') {
+    modal.innerHTML = `
+      <div class="modal-header"><h2>Add New AHA Member</h2><button class="modal-close" onclick="closeModal()">×</button></div>
+      <div class="form-row"><div class="fg"><label>First Name</label><input type="text"></div><div class="fg"><label>Last Name</label><input type="text"></div></div>
+      <div class="fg"><label>Email</label><input type="email"></div>
+      <div class="form-row"><div class="fg"><label>Phone</label><input type="tel"></div><div class="fg"><label>State</label><select><option value="">Select</option><option>WA</option><option>NSW</option><option>VIC</option><option>QLD</option><option>SA</option><option>TAS</option><option>NT</option><option>ACT</option></select></div></div>
+      <div class="fg"><label>Membership Status</label><select><option>pending_payment</option><option>active</option></select></div>
+      <div class="fg"><label>Grant TMC Access</label><div style="display:flex;align-items:center;gap:0.75rem;"><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label><span style="font-size:0.8125rem;">Enable TMC platform access</span></div></div>
+      <div class="fg"><label>Payment Reference</label><input type="text" placeholder="If paying now..."></div>
+      <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal()">Add Member</button></div>
+    `;
+  } else if (type === 'add-farmer') {
+    modal.innerHTML = `
+      <div class="modal-header"><h2>Add New Farmer</h2><button class="modal-close" onclick="closeModal()">×</button></div>
+      <div class="form-row"><div class="fg"><label>First Name</label><input type="text"></div><div class="fg"><label>Last Name</label><input type="text"></div></div>
+      <div class="fg"><label>Email</label><input type="email"></div>
+      <div class="form-row"><div class="fg"><label>Phone</label><input type="tel"></div><div class="fg"><label>State</label><select><option value="">Select</option><option>WA</option><option>NSW</option><option>VIC</option><option>QLD</option><option>SA</option><option>TAS</option><option>NT</option><option>ACT</option></select></div></div>
+      <div class="fg"><label>Property Name</label><input type="text"></div>
+      <div class="fg"><label>Region / Town</label><input type="text"></div>
+      <div class="fg"><label>Property Size</label><select><option value="">Select</option><option>Under 100 ha</option><option>100–500 ha</option><option>500–2,000 ha</option><option>2,000–10,000 ha</option><option>Over 10,000 ha</option></select></div>
+      <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal()">Add Farmer</button></div>
+    `;
+  }
+  
+  overlay.classList.add('open');
+}
+
+function openMemberModal(email) {
+  const m = MEMBERS.find(mm => mm.email === email);
+  if (!m) return;
+  
+  const modal = document.getElementById('modal-content');
+  const statusCls = m.status === 'active' ? 'status-active' : m.status === 'pending_payment' ? 'status-pending' : m.status === 'lapsed' ? 'status-lapsed' : 'status-cancelled';
+  
+  modal.innerHTML = `
+    <div class="modal-header"><h2>${m.name}</h2><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+      <span class="status ${statusCls}">${m.status === 'pending_payment' ? 'Pending Payment' : m.status}</span>
+      <span class="status ${m.tmc ? 'status-on' : 'status-off'}">TMC ${m.tmc ? 'On' : 'Off'}</span>
+    </div>
+    <div class="form-row"><div class="fg"><label>Member Number</label><input type="text" value="${m.num}" ${m.num === '—' ? 'disabled placeholder="Generated on activation"' : ''}></div><div class="fg"><label>Email</label><input type="email" value="${m.email}"></div></div>
+    <div class="form-row"><div class="fg"><label>Phone</label><input type="tel" value="${m.phone}"></div><div class="fg"><label>State</label><select>${['WA','NSW','VIC','QLD','SA','TAS','NT','ACT'].map(s=>`<option ${s===m.state?'selected':''}>${s}</option>`).join('')}</select></div></div>
+    <div class="fg"><label>AHA Membership Status</label><select>${['active','pending_payment','lapsed','cancelled'].map(s=>`<option ${s===m.status?'selected':''}>${s}</option>`).join('')}</select></div>
+    <div class="fg"><label>TMC Platform Access</label><div style="display:flex;align-items:center;gap:0.75rem;"><label class="toggle"><input type="checkbox" ${m.tmc?'checked':''}><span class="toggle-slider"></span></label><span style="font-size:0.8125rem;">${m.tmc ? 'Enabled' : 'Disabled'}</span></div></div>
+    <div class="fg"><label>Training Progress</label><input type="text" value="${m.training}" readonly></div>
+    <div class="fg"><label>Payment Status</label><input type="text" value="${m.payment}"></div>
+    <div class="fg"><label>Admin Notes</label><textarea placeholder="Internal notes about this member..."></textarea></div>
+    <div class="modal-actions">
+      ${m.status === 'pending_payment' ? '<button class="btn btn-success" onclick="closeModal()">Activate & Generate Number</button>' : ''}
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal()">Save Changes</button>
+    </div>
+  `;
+  
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// =====================================================
+// SHOOTING REVIEWS
+// =====================================================
+function approveShoot(btn) {
+  const card = btn.closest('.review-card');
+  card.style.borderLeft = '4px solid var(--success)';
+  card.querySelector('.review-header .status').className = 'status status-approved';
+  card.querySelector('.review-header .status').textContent = 'Approved';
+  btn.parentElement.innerHTML = '<span style="color:var(--success);font-weight:600;font-size:0.875rem;">✓ Approved — certificate will be generated</span>';
+  updateShootingBadge();
+}
+
+function rejectShoot(btn) {
+  const card = btn.closest('.review-card');
+  card.style.borderLeft = '4px solid var(--red)';
+  card.querySelector('.review-header .status').className = 'status status-rejected';
+  card.querySelector('.review-header .status').textContent = 'Rejected';
+  btn.parentElement.innerHTML = '<span style="color:var(--red);font-weight:600;font-size:0.875rem;">✗ Rejected — member will be notified to resubmit</span>';
+  updateShootingBadge();
+}
+
+function queryShoot(btn) {
+  const card = btn.closest('.review-card');
+  card.querySelector('.review-header .status').className = 'status status-pending';
+  card.querySelector('.review-header .status').textContent = 'Queried';
+  btn.parentElement.innerHTML = '<span style="color:var(--gold);font-weight:600;font-size:0.875rem;">? Queried — member will be asked for more information</span>';
+}
+
+function updateShootingBadge() {
+  const pending = document.querySelectorAll('#admin-shooting .status-review').length;
+  document.getElementById('shooting-badge').textContent = pending;
+  if (pending === 0) document.getElementById('shooting-badge').style.display = 'none';
+}
+
+// =====================================================
+// QUICK ACTIONS
+// =====================================================
+function quickActivate() {
+  const search = document.getElementById('quick-activate-search').value;
+  const ref = document.getElementById('quick-activate-ref').value;
+  if (!search) { alert('Enter a member email or name.'); return; }
+  alert(`Membership activated for "${search}".\nPayment ref: ${ref || 'manual'}\nMember number generated: AHA-2026-${String(Math.floor(Math.random()*99999)).padStart(5,'0')}\n\nWelcome email will be sent with their member number.`);
+}
+
+function quickLookup() {
+  const search = document.getElementById('quick-lookup').value.toLowerCase();
+  if (!search) return;
+  const m = MEMBERS.find(mm => mm.num.toLowerCase().includes(search) || mm.email.toLowerCase().includes(search) || mm.name.toLowerCase().includes(search));
+  const el = document.getElementById('quick-lookup-result');
+  if (m) {
+    el.innerHTML = `<div class="card" style="margin-bottom:0;">
+      <strong>${m.name}</strong> · ${m.num}<br>
+      <span style="font-size:0.8125rem;color:var(--text-lt);">${m.email} · ${m.phone} · ${m.state}</span><br>
+      <span class="status ${m.status==='active'?'status-active':m.status==='pending_payment'?'status-pending':'status-lapsed'}">${m.status}</span>
+      <span class="status ${m.tmc?'status-on':'status-off'}">TMC ${m.tmc?'On':'Off'}</span>
+      <span style="font-size:0.75rem;color:var(--text-lt);"> · Training: ${m.training} · Joined: ${m.joined}</span>
+    </div>`;
+  } else {
+    el.innerHTML = '<div class="alert alert-warning" style="margin-bottom:0;">No member found.</div>';
+  }
+}
+
+function manualActivate(btn, name) {
+  if (confirm(`Activate membership for ${name}? This will generate a member number and send a welcome email.`)) {
+    const num = 'AHA-2026-' + String(Math.floor(Math.random()*99999)).padStart(5,'0');
+    btn.parentElement.innerHTML = `<span class="status status-active">Activated: ${num}</span>`;
+    const row = btn.closest('tr');
+    row.querySelector('.status-pending').className = 'status status-active';
+    row.querySelector('.status-pending')?.classList.replace('status-pending','status-active');
+  }
+}
+
+// =====================================================
+// INIT
+// =====================================================
+document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+renderMembers();
+</script>
+</body>
+</html>

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Marksmen Co — Landholder Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green-dark: #2d3327;
+  --green-mid: #4a6741;
+  --green-hover: #3d5635;
+  --olive: #6b7c59;
+  --tan: #87805e;
+  --cream: #f5f4ed;
+  --cream-lt: #faf9f7;
+  --beige: #c9b896;
+  --beige-stone: #e8e6dd;
+  --green-soft: #e8f5e9;
+  --text-dark: #1a1a16;
+  --text-mid: #4a4a3a;
+  --text-lt: #6b7265;
+  --white: #ffffff;
+  --border: #d4d0c8;
+  --red: #c0392b;
+  --red-bg: #fdf2f2;
+  --gold: #b8860b;
+  --gold-bg: #fdf8e8;
+  --success: #27ae60;
+  --success-bg: #eafaf1;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+  --radius: 8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;color:var(--text-dark);background:var(--cream-lt);min-height:100vh;}
+
+/* NAV */
+.nav{background:var(--green-dark);padding:0 1.5rem;display:flex;justify-content:space-between;align-items:center;height:3.5rem;position:sticky;top:0;z-index:100;}
+.nav-brand{display:flex;align-items:center;gap:0.625rem;color:var(--cream);}
+.nav-logo{width:32px;height:32px;background:var(--green-mid);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;color:var(--white);}
+.nav-name{font-weight:600;font-size:0.9375rem;}
+.nav-sub{color:var(--beige);font-size:0.75rem;font-weight:400;margin-left:0.25rem;}
+.nav-links{display:flex;gap:0.25rem;align-items:center;}
+.nav-btn{background:none;border:1px solid rgba(255,255,255,0.15);color:var(--cream);padding:0.35rem 0.75rem;border-radius:4px;cursor:pointer;font-size:0.8rem;font-family:inherit;transition:all 0.2s;}
+.nav-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);}
+.nav-btn.active{background:var(--green-mid);border-color:var(--green-mid);}
+
+/* LAYOUT */
+.page{display:none;}.page.active{display:block;}
+.container{max-width:720px;margin:0 auto;padding:2rem 1rem;}
+.container-wide{max-width:960px;}
+.container-narrow{max-width:480px;}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;box-shadow:var(--shadow);}
+.card-header{font-size:1.0625rem;font-weight:600;margin-bottom:0.875rem;padding-bottom:0.625rem;border-bottom:1px solid var(--border);}
+
+/* FORMS */
+.fg{margin-bottom:1rem;}
+.fg label{display:block;font-size:0.8125rem;font-weight:600;margin-bottom:0.3rem;}
+.fg .hint{font-size:0.75rem;color:var(--text-lt);margin-bottom:0.3rem;font-weight:400;}
+.fg input,.fg select,.fg textarea{width:100%;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:6px;font-size:0.9rem;font-family:inherit;color:var(--text-dark);background:var(--white);transition:border-color 0.2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--green-mid);box-shadow:0 0 0 3px rgba(74,103,65,0.1);}
+.fg textarea{min-height:90px;resize:vertical;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
+@media(max-width:500px){.form-row{grid-template-columns:1fr;}}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.65rem 1.25rem;border:none;border-radius:6px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;}
+.btn-primary{background:var(--green-mid);color:var(--white);}
+.btn-primary:hover{background:var(--green-hover);}
+.btn-secondary{background:var(--beige-stone);color:var(--text-dark);}
+.btn-secondary:hover{background:var(--beige);}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--text-mid);}
+.btn-outline:hover{background:var(--cream);border-color:var(--text-lt);}
+.btn-gold{background:var(--gold);color:var(--white);}
+.btn-gold:hover{background:#a07608;}
+.btn-danger{background:var(--red);color:var(--white);}
+.btn-danger:hover{background:#a93226;}
+.btn-full{width:100%;}
+.btn-sm{padding:0.35rem 0.75rem;font-size:0.8rem;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:0.3rem;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.7rem;font-weight:600;letter-spacing:0.02em;}
+.badge-certified{background:var(--green-mid);color:var(--white);}
+.badge-insured{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold);}
+.badge-available{background:var(--success-bg);color:var(--success);border:1px solid var(--success);}
+.badge-foundation{background:var(--green-soft);color:var(--green-mid);border:1px solid var(--green-mid);}
+
+/* ALERTS */
+.alert{padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.8125rem;line-height:1.5;}
+.alert-info{background:#e8f4f8;color:#2c6e8a;border:1px solid #b8dce8;}
+.alert-success{background:var(--success-bg);color:#1e7e34;border:1px solid #a3d9b1;}
+.alert-warning{background:var(--gold-bg);color:#7d6608;border:1px solid #e8d48a;}
+.alert-error{background:var(--red-bg);color:var(--red);border:1px solid #e8a8a8;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.75rem;margin-bottom:1rem;}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:0.875rem;text-align:center;box-shadow:var(--shadow);}
+.stat-number{font-size:1.5rem;font-weight:700;color:var(--green-mid);}
+.stat-label{font-size:0.7rem;color:var(--text-lt);margin-top:0.15rem;text-transform:uppercase;letter-spacing:0.04em;}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1rem;}
+.tab{padding:0.5rem 0.875rem;font-size:0.8125rem;font-weight:500;color:var(--text-lt);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;}
+.tab:hover{color:var(--text-dark);}
+.tab.active{color:var(--green-mid);border-bottom-color:var(--green-mid);font-weight:600;}
+.tab-content{display:none;}.tab-content.active{display:block;}
+
+/* JOB CARDS */
+.job-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem;box-shadow:var(--shadow);transition:all 0.2s;}
+.job-card:hover{box-shadow:var(--shadow-lg);}
+.job-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;}
+.job-species{display:flex;gap:0.3rem;flex-wrap:wrap;}
+.job-species-tag{background:var(--beige-stone);color:var(--text-mid);padding:0.15rem 0.4rem;border-radius:3px;font-size:0.7rem;font-weight:500;}
+.job-status-tag{padding:0.15rem 0.5rem;border-radius:3px;font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;}
+.status-open{background:var(--success-bg);color:var(--success);}
+.status-reviewing{background:#e8f4f8;color:#2980b9;}
+.status-filled{background:var(--green-soft);color:var(--green-mid);}
+.status-closed{background:var(--beige-stone);color:var(--text-lt);}
+.job-description{font-size:0.8125rem;color:var(--text-mid);margin-bottom:0.5rem;line-height:1.5;}
+.job-meta{display:flex;gap:0.75rem;font-size:0.75rem;color:var(--text-lt);}
+
+/* HUNTER REVIEW CARDS */
+.hunter-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:0.75rem;box-shadow:var(--shadow);}
+.hunter-header{display:flex;gap:1rem;align-items:center;margin-bottom:0.75rem;}
+.hunter-avatar{width:48px;height:48px;border-radius:50%;background:var(--olive);display:flex;align-items:center;justify-content:center;color:var(--cream);font-size:1rem;font-weight:700;flex-shrink:0;}
+.hunter-name{font-weight:600;font-size:1rem;}
+.hunter-location{font-size:0.8125rem;color:var(--text-lt);}
+.hunter-badges{display:flex;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.5rem;}
+.hunter-bio{font-size:0.8125rem;color:var(--text-mid);line-height:1.5;margin-bottom:0.75rem;}
+.hunter-species{display:flex;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.75rem;}
+
+/* CONTACT RELEASE */
+.contact-card{background:var(--success-bg);border:2px solid var(--success);border-radius:var(--radius);padding:1.25rem;margin-bottom:0.75rem;}
+.contact-card h3{color:var(--success);margin-bottom:0.75rem;font-size:1rem;}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media(max-width:500px){.contact-grid{grid-template-columns:1fr;}}
+.contact-person{padding:0.75rem;background:var(--white);border-radius:6px;}
+.contact-person h4{font-size:0.8rem;color:var(--text-lt);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.5rem;}
+.contact-person p{font-size:0.875rem;margin-bottom:0.25rem;}
+.contact-person .name{font-weight:700;font-size:1rem;color:var(--text-dark);margin-bottom:0.375rem;}
+
+/* SPECIES SELECTOR */
+.species-select{display:flex;flex-wrap:wrap;gap:0.375rem;margin-bottom:0.25rem;}
+.species-chip{padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:2rem;font-size:0.8rem;cursor:pointer;transition:all 0.2s;background:var(--white);color:var(--text-mid);user-select:none;}
+.species-chip:hover{border-color:var(--green-mid);}
+.species-chip.selected{background:var(--green-mid);color:var(--white);border-color:var(--green-mid);}
+
+/* SPINNER */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .container{padding:1rem 0.875rem;}
+  .card{padding:1.125rem;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .job-header{flex-direction:column;gap:0.25rem;}
+  .hunter-header{flex-direction:column;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="main-nav">
+  <div class="nav-brand">
+    <div class="nav-logo">TMC</div>
+    <span class="nav-name">The Marksmen Co<span class="nav-sub"> · Landholder Portal</span></span>
+  </div>
+  <div class="nav-links" id="nav-links">
+    <button class="nav-btn active" onclick="showPage('login')">Sign In</button>
+  </div>
+</nav>
+
+<!-- ===== LOGIN ===== -->
+<div class="page active" id="page-login">
+  <div class="container container-narrow" style="margin-top:2rem;">
+    <div class="card" style="text-align:center;">
+      <div style="width:56px;height:56px;background:var(--green-soft);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:1.375rem;">🌾</div>
+      <h2 style="font-size:1.25rem;margin-bottom:0.375rem;">Landholder Portal</h2>
+      <p style="color:var(--text-lt);font-size:0.875rem;margin-bottom:1.5rem;">Sign in to manage your jobs and connect with operators</p>
+      
+      <div class="alert alert-error" id="login-error" style="display:none;text-align:left;"></div>
+      
+      <div class="fg" style="text-align:left;">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="your@email.com.au">
+      </div>
+      <div class="fg" style="text-align:left;">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Your password">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="farmerLogin()">Sign In</button>
+      
+      <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">
+        <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.5rem;">Don't have an account?</p>
+        <button class="btn btn-outline btn-full" onclick="showPage('signup')">Register My Property — Free</button>
+      </div>
+    </div>
+    
+    <div style="text-align:center;margin-top:1rem;">
+      <p style="font-size:0.8125rem;color:var(--text-lt);">Are you a hunter?</p>
+      <a href="/hunter" style="color:var(--green-mid);font-weight:600;font-size:0.8125rem;text-decoration:none;">Go to the Hunter Portal →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SIGNUP ===== -->
+<div class="page" id="page-signup">
+  <div class="container container-narrow">
+    <button class="btn btn-outline btn-sm" onclick="showPage('login')" style="margin-bottom:1rem;">← Back</button>
+    <div class="card">
+      <div class="card-header">Create your landholder account</div>
+      <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:1.25rem;">Free for all landholders. No membership or fees required.</p>
+      
+      <div class="form-row">
+        <div class="fg"><label>First Name *</label><input type="text" id="signup-first" placeholder="John"></div>
+        <div class="fg"><label>Last Name *</label><input type="text" id="signup-last" placeholder="Smith"></div>
+      </div>
+      <div class="fg"><label>Email *</label><input type="email" id="signup-email" placeholder="john@email.com.au"></div>
+      <div class="fg"><label>Phone *</label><input type="tel" id="signup-phone" placeholder="04XX XXX XXX"></div>
+      <div class="fg"><label>Property Name</label><input type="text" id="signup-property" placeholder="e.g. Sunrise Downs"></div>
+      <div class="form-row">
+        <div class="fg"><label>Property Region / Town *</label><input type="text" id="signup-region" placeholder="e.g. Toodyay, WA"></div>
+        <div class="fg"><label>State *</label><select id="signup-state"><option value="">Select</option><option>WA</option><option>NSW</option><option>VIC</option><option>QLD</option><option>SA</option><option>TAS</option><option>NT</option><option>ACT</option></select></div>
+      </div>
+      <div class="fg"><label>Property Size (approx)</label><select id="signup-size"><option value="">Select</option><option>Under 100 hectares</option><option>100–500 hectares</option><option>500–2,000 hectares</option><option>2,000–10,000 hectares</option><option>Over 10,000 hectares</option></select></div>
+      
+      <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);">
+        <div class="fg"><label>Create Password *</label><input type="password" id="signup-password" placeholder="At least 8 characters"></div>
+        <div class="fg"><label>Confirm Password *</label><input type="password" id="signup-password-confirm" placeholder="Re-enter password"></div>
+      </div>
+      
+      <button class="btn btn-primary btn-full" onclick="farmerSignup()">Register My Property & Enter Portal →</button>
+      <p style="font-size:0.75rem;color:var(--text-lt);margin-top:0.75rem;text-align:center;">Free for all landholders. No fees, no obligation. By registering you agree to be contacted by certified operators through The Marksmen Co.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="page" id="page-dashboard">
+  <div class="container container-wide">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.5rem;">
+      <div>
+        <h1 style="font-size:1.25rem;">Welcome, <span id="dash-name">Landholder</span></h1>
+        <p style="color:var(--text-lt);font-size:0.8125rem;" id="dash-property"></p>
+      </div>
+      <button class="btn btn-primary" onclick="showPage('post-job')">+ Post a New Job</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number" id="stat-active">0</div><div class="stat-label">Active Jobs</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-interest">0</div><div class="stat-label">Interested Hunters</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-filled">0</div><div class="stat-label">Jobs Filled</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-total">0</div><div class="stat-label">Total Posted</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Your Jobs</div>
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab(this,'tab-active')">Active (<span id="tab-active-count">0</span>)</button>
+        <button class="tab" onclick="switchTab(this,'tab-filled')">Filled (<span id="tab-filled-count">0</span>)</button>
+        <button class="tab" onclick="switchTab(this,'tab-closed')">Closed (<span id="tab-closed-count">0</span>)</button>
+      </div>
+
+      <div class="tab-content active" id="tab-active">
+        <div id="active-jobs-list">
+          <p style="text-align:center;color:var(--text-lt);padding:2rem 0;font-size:0.875rem;">No active jobs. Click "Post a New Job" to get started.</p>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-filled">
+        <div id="filled-jobs-list">
+          <p style="text-align:center;color:var(--text-lt);padding:2rem 0;font-size:0.875rem;">No filled jobs yet.</p>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-closed">
+        <p style="text-align:center;color:var(--text-lt);padding:2rem 0;font-size:0.875rem;">No closed jobs.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>How it works:</strong> Post a job describing your pest problem. AHA-certified operators will express interest. Review their profiles, check their credentials, and select the operator you want to work with. Their contact details will be shared with you and yours with them. It's completely free.
+    </div>
+  </div>
+</div>
+
+<!-- ===== POST A JOB ===== -->
+<div class="page" id="page-post-job">
+  <div class="container">
+    <button class="btn btn-outline btn-sm" onclick="showPage('dashboard')" style="margin-bottom:1rem;">← Back to Dashboard</button>
+    <h1 style="font-size:1.375rem;margin-bottom:0.375rem;">Post a Job</h1>
+    <p style="color:var(--text-lt);margin-bottom:1.25rem;font-size:0.875rem;">Describe your pest problem and AHA-certified operators will respond.</p>
+
+    <div class="card">
+      <div class="card-header">What species are you dealing with?</div>
+      <p style="font-size:0.8125rem;color:var(--text-lt);margin-bottom:0.75rem;">Select all that apply.</p>
+      <div class="species-select" id="job-species">
+        <div class="species-chip" onclick="toggleChip(this)" data-species="Red fox">Red fox</div>
+        <div class="species-chip" onclick="toggleChip(this)" data-species="Feral pig">Feral pig</div>
+        <div class="species-chip" onclick="toggleChip(this)" data-species="European rabbit">European rabbit</div>
+        <div class="species-chip" onclick="toggleChip(this)" data-species="Feral goat">Feral goat</div>
+        <div class="species-chip" onclick="toggleChip(this)" data-species="Feral deer">Feral deer</div>
+        <div class="species-chip" onclick="toggleChip(this)" data-species="Feral cat">Feral cat</div>
+        <div class="species-chip" onclick="toggleChip(this)" data-species="Wild dogs">Wild dogs</div>
+        <div class="species-chip" onclick="toggleChip(this)" data-species="Kangaroos">Kangaroos</div>
+        <div class="species-chip" onclick="toggleChip(this)" data-species="Emus">Emus</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Describe the problem</div>
+      <div class="fg">
+        <label>What's happening? *</label>
+        <p class="hint">Tell operators what you're dealing with — where on the property, what damage, how long it's been a problem. The more detail, the better the response.</p>
+        <textarea id="job-description" placeholder="e.g. Foxes have been taking lambs in the eastern paddocks near the creek line. Mostly at night. Open country with some scrub along the boundary. We've lost about 15 lambs in the last month."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="fg">
+          <label>Property Region *</label>
+          <p class="hint">Town or area only — your exact address is never shared.</p>
+          <input type="text" id="job-region" placeholder="e.g. Toodyay, WA">
+        </div>
+        <div class="fg">
+          <label>How urgent? *</label>
+          <select id="job-urgency">
+            <option value="">Select</option>
+            <option>Within a few days</option>
+            <option>Within 2 weeks</option>
+            <option>Within a month</option>
+            <option>Flexible — no rush</option>
+            <option>Ongoing / recurring</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Anything else operators should know?</label>
+        <textarea id="job-notes" placeholder="e.g. Stock in the western paddock, night work preferred, vehicle access is good..." style="min-height:60px;"></textarea>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>What happens next:</strong> Your job will be visible to AHA-certified operators in your region. They'll express interest through the platform. You review their profiles, check their credentials, and select the one you want to work with. No obligation until you choose someone.
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="submitJob()">Post Job →</button>
+  </div>
+</div>
+
+<!-- ===== REVIEW INTERESTED HUNTERS ===== -->
+<div class="page" id="page-review">
+  <div class="container container-wide">
+    <button class="btn btn-outline btn-sm" onclick="showPage('dashboard')" style="margin-bottom:1rem;">← Back to Dashboard</button>
+    
+    <div id="review-job-header">
+      <!-- Populated by JS -->
+    </div>
+
+    <div id="review-hunters-list">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONTACT RELEASED ===== -->
+<div class="page" id="page-contact">
+  <div class="container">
+    <button class="btn btn-outline btn-sm" onclick="showPage('dashboard')" style="margin-bottom:1rem;">← Back to Dashboard</button>
+    
+    <div class="contact-card">
+      <h3>✓ Contact Details Released</h3>
+      <p style="font-size:0.875rem;color:var(--text-mid);margin-bottom:1rem;">You've selected an operator for this job. Contact details have been shared with both parties — you can now reach out to each other directly.</p>
+      
+      <div class="contact-grid" id="contact-details">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>Next steps:</strong> Reach out to the operator to arrange the visit. They've been trained through AHA Foundation and should send you a confirmatory message before arriving. After the visit, they'll send you a short end-of-visit summary.
+    </div>
+
+    <button class="btn btn-outline btn-full" onclick="showPage('dashboard')">Back to Dashboard</button>
+  </div>
+</div>
+
+<script>
+// =====================================================
+// STATE
+// =====================================================
+let currentFarmer = null;
+let farmerJobs = [];
+let reviewingJobIndex = -1;
+
+// Sample hunter profiles that "express interest"
+const SAMPLE_HUNTERS = [
+  { name: "Dave Mitchell", initials: "DM", location: "Northam, WA", radius: "400km", bio: "Five years doing pest management in the central wheatbelt. Mostly foxes and rabbits, comfortable with pig work in scrub country further east.", species: ["Red fox","European rabbit","Feral pig","Feral cat"], badges: ["AHA Certified","Foundation Trained","Individual Policy"], available: true, phone: "0412 345 678", email: "dave.m@email.com.au" },
+  { name: "Sam Brewer", initials: "SB", location: "York, WA", radius: "200km", bio: "Ex-army, now running pest management as a second career. Methodical, thorough, good with nervous landholders. Fox and wild dog specialist.", species: ["Red fox","Wild dogs","Feral pig","Feral goat"], badges: ["AHA Certified","Foundation Trained","Individual Policy"], available: true, phone: "0423 456 789", email: "sam.brewer@email.com.au" },
+  { name: "Kate Lawson", initials: "KL", location: "Geraldton, WA", radius: "600km", bio: "Pastoral station background. Comfortable working solo across big properties. Good with goats and pigs in rangeland country.", species: ["Feral pig","Feral goat","Red fox","Kangaroos","Wild dogs"], badges: ["AHA Certified","Foundation Trained","SSAA Cover"], available: true, phone: "0434 567 890", email: "kate.l@email.com.au" },
+  { name: "Tom Richardson", initials: "TR", location: "Merredin, WA", radius: "400km", bio: "Wheatbelt local, been doing this informally for years. Finally got proper certification through AHA. Fox, rabbit, and roo work.", species: ["Red fox","European rabbit","Kangaroos","Emus"], badges: ["AHA Certified","Foundation Trained"], available: false, phone: "0445 678 901", email: "tom.r@email.com.au" },
+];
+
+// =====================================================
+// FARMER LOGIN / SIGNUP
+// =====================================================
+function farmerLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email) { document.getElementById('login-error').textContent = 'Please enter your email.'; document.getElementById('login-error').style.display = 'block'; return; }
+  if (!password) { document.getElementById('login-error').textContent = 'Please enter your password.'; document.getElementById('login-error').style.display = 'block'; return; }
+  
+  // Demo mode — any email + password works
+  currentFarmer = { first: 'Mark', last: 'Henderson', email: email, phone: '0418 999 888', property: 'Henderson Station', region: 'Toodyay, WA', state: 'WA' };
+  loadDemoJobs();
+  enterDashboard();
+}
+
+function farmerSignup() {
+  const first = document.getElementById('signup-first').value.trim();
+  const last = document.getElementById('signup-last').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const phone = document.getElementById('signup-phone').value.trim();
+  const region = document.getElementById('signup-region').value.trim();
+  const state = document.getElementById('signup-state').value;
+  const property = document.getElementById('signup-property').value.trim();
+  const pw = document.getElementById('signup-password').value;
+  const pwConfirm = document.getElementById('signup-password-confirm').value;
+  
+  if (!first || !last || !email || !phone || !region || !state) { alert('Please fill in all required fields.'); return; }
+  if (pw.length < 8) { alert('Password must be at least 8 characters.'); return; }
+  if (pw !== pwConfirm) { alert('Passwords do not match.'); return; }
+  
+  // In production: create Supabase auth user + farmer profile
+  currentFarmer = { first, last, email, phone, property: property || first + "'s Property", region, state };
+  farmerJobs = [];
+  enterDashboard();
+}
+
+function loadDemoJobs() {
+  farmerJobs = [
+    {
+      id: 1,
+      species: ['Red fox', 'European rabbit'],
+      description: 'Foxes have been taking lambs in the eastern paddocks near the creek line. Also rabbits damaging the oat crop along the boundary fence.',
+      region: 'Toodyay, WA',
+      urgency: 'Within 2 weeks',
+      notes: 'Night work preferred. Good vehicle access via the eastern gate.',
+      status: 'open',
+      posted: '2 days ago',
+      interested: [0, 1] // indices into SAMPLE_HUNTERS
+    },
+    {
+      id: 2,
+      species: ['Feral pig'],
+      description: 'Pigs coming in from the creek and rooting up the south paddock. Destroyed a section of fencing last week.',
+      region: 'Toodyay, WA',
+      urgency: 'Within a month',
+      notes: 'Thick scrub along the creek. Be careful with the cattle in the adjacent paddock.',
+      status: 'open',
+      posted: '5 days ago',
+      interested: [0, 2, 3]
+    }
+  ];
+}
+
+function enterDashboard() {
+  document.getElementById('dash-name').textContent = currentFarmer.first;
+  document.getElementById('dash-property').textContent = currentFarmer.property ? `${currentFarmer.property} — ${currentFarmer.region}` : currentFarmer.region;
+  renderJobs();
+  showPage('dashboard');
+}
+
+// =====================================================
+// JOBS
+// =====================================================
+function renderJobs() {
+  const activeJobs = farmerJobs.filter(j => j.status === 'open');
+  const filledJobs = farmerJobs.filter(j => j.status === 'filled');
+  
+  document.getElementById('stat-active').textContent = activeJobs.length;
+  document.getElementById('stat-interest').textContent = activeJobs.reduce((sum, j) => sum + (j.interested?.length || 0), 0);
+  document.getElementById('stat-filled').textContent = filledJobs.length;
+  document.getElementById('stat-total').textContent = farmerJobs.length;
+  
+  document.getElementById('tab-active-count').textContent = activeJobs.length;
+  document.getElementById('tab-filled-count').textContent = filledJobs.length;
+  
+  // Active jobs
+  const activeEl = document.getElementById('active-jobs-list');
+  if (activeJobs.length === 0) {
+    activeEl.innerHTML = '<p style="text-align:center;color:var(--text-lt);padding:2rem 0;font-size:0.875rem;">No active jobs. Click "Post a New Job" to get started.</p>';
+  } else {
+    activeEl.innerHTML = activeJobs.map((job, i) => {
+      const idx = farmerJobs.indexOf(job);
+      const speciesTags = job.species.map(s => `<span class="job-species-tag">${s}</span>`).join('');
+      const interestCount = job.interested?.length || 0;
+      return `<div class="job-card">
+        <div class="job-header">
+          <div class="job-species">${speciesTags}</div>
+          <span class="job-status-tag ${interestCount > 0 ? 'status-reviewing' : 'status-open'}">${interestCount > 0 ? interestCount + ' interested' : 'Open'}</span>
+        </div>
+        <div class="job-description">${job.description}</div>
+        <div class="job-meta"><span>📍 ${job.region}</span><span>⏱ ${job.urgency}</span><span>Posted ${job.posted}</span></div>
+        <div style="margin-top:0.625rem;display:flex;gap:0.4rem;">
+          ${interestCount > 0 ? `<button class="btn btn-gold btn-sm" onclick="reviewJob(${idx})">Review ${interestCount} Hunter${interestCount > 1 ? 's' : ''} →</button>` : ''}
+          <button class="btn btn-outline btn-sm" onclick="closeJob(${idx})">Close Job</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  
+  // Filled jobs
+  const filledEl = document.getElementById('filled-jobs-list');
+  if (filledJobs.length === 0) {
+    filledEl.innerHTML = '<p style="text-align:center;color:var(--text-lt);padding:2rem 0;font-size:0.875rem;">No filled jobs yet.</p>';
+  } else {
+    filledEl.innerHTML = filledJobs.map(job => {
+      const speciesTags = job.species.map(s => `<span class="job-species-tag">${s}</span>`).join('');
+      const hunter = SAMPLE_HUNTERS[job.selectedHunter];
+      return `<div class="job-card">
+        <div class="job-header">
+          <div class="job-species">${speciesTags}</div>
+          <span class="job-status-tag status-filled">Filled</span>
+        </div>
+        <div class="job-description">${job.description}</div>
+        <p style="font-size:0.8125rem;color:var(--success);margin-top:0.375rem;font-weight:600;">✓ Selected: ${hunter.name}</p>
+        <div style="margin-top:0.5rem;">
+          <button class="btn btn-outline btn-sm" onclick="viewContact(${farmerJobs.indexOf(job)})">View Contact Details</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function submitJob() {
+  const speciesChips = document.querySelectorAll('#job-species .species-chip.selected');
+  const species = Array.from(speciesChips).map(c => c.dataset.species);
+  const description = document.getElementById('job-description').value.trim();
+  const region = document.getElementById('job-region').value.trim() || currentFarmer.region;
+  const urgency = document.getElementById('job-urgency').value;
+  const notes = document.getElementById('job-notes').value.trim();
+  
+  if (species.length === 0) { alert('Please select at least one species.'); return; }
+  if (!description) { alert('Please describe the problem.'); return; }
+  if (!urgency) { alert('Please select an urgency level.'); return; }
+  
+  const newJob = {
+    id: farmerJobs.length + 1,
+    species,
+    description,
+    region,
+    urgency,
+    notes,
+    status: 'open',
+    posted: 'Just now',
+    interested: []
+  };
+  
+  // Simulate some hunters expressing interest after a short delay
+  setTimeout(() => {
+    const relevantHunters = SAMPLE_HUNTERS.map((h, i) => i).filter(i => {
+      const h = SAMPLE_HUNTERS[i];
+      return species.some(s => h.species.includes(s));
+    });
+    newJob.interested = relevantHunters.slice(0, Math.min(3, relevantHunters.length));
+    renderJobs();
+  }, 500);
+  
+  farmerJobs.push(newJob);
+  
+  // Reset form
+  document.querySelectorAll('#job-species .species-chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('job-description').value = '';
+  document.getElementById('job-region').value = '';
+  document.getElementById('job-urgency').value = '';
+  document.getElementById('job-notes').value = '';
+  
+  renderJobs();
+  showPage('dashboard');
+}
+
+function closeJob(idx) {
+  if (confirm('Close this job? It will be removed from the platform.')) {
+    farmerJobs[idx].status = 'closed';
+    renderJobs();
+  }
+}
+
+// =====================================================
+// REVIEW HUNTERS
+// =====================================================
+function reviewJob(idx) {
+  reviewingJobIndex = idx;
+  const job = farmerJobs[idx];
+  
+  const speciesTags = job.species.map(s => `<span class="job-species-tag">${s}</span>`).join('');
+  
+  document.getElementById('review-job-header').innerHTML = `
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;">
+        <div>
+          <h1 style="font-size:1.125rem;margin-bottom:0.375rem;">Review Interested Operators</h1>
+          <div style="margin-bottom:0.375rem;">${speciesTags}</div>
+          <p style="font-size:0.8125rem;color:var(--text-lt);">📍 ${job.region} · ⏱ ${job.urgency}</p>
+        </div>
+        <span class="job-status-tag status-reviewing">${job.interested.length} interested</span>
+      </div>
+    </div>
+  `;
+  
+  const huntersHtml = job.interested.map(hi => {
+    const h = SAMPLE_HUNTERS[hi];
+    const badges = h.badges.map(b => {
+      const cls = b.includes('Certified') ? 'badge-certified' : b.includes('Foundation') ? 'badge-foundation' : b.includes('Individual') ? 'badge-insured' : 'badge-available';
+      return `<span class="badge ${cls}">${b}</span>`;
+    }).join('');
+    const speciesList = h.species.map(s => `<span class="job-species-tag">${s}</span>`).join('');
+    
+    return `<div class="hunter-card">
+      <div class="hunter-header">
+        <div class="hunter-avatar">${h.initials}</div>
+        <div>
+          <div class="hunter-name">${h.name}</div>
+          <div class="hunter-location">📍 ${h.location} · Radius: ${h.radius}</div>
+        </div>
+      </div>
+      <div class="hunter-badges">${badges}</div>
+      <div class="hunter-bio">${h.bio}</div>
+      <div class="hunter-species">${speciesList}</div>
+      <div style="display:flex;gap:0.4rem;">
+        <button class="btn btn-primary btn-sm" onclick="selectHunter(${hi})">Select This Operator</button>
+      </div>
+    </div>`;
+  }).join('');
+  
+  document.getElementById('review-hunters-list').innerHTML = huntersHtml;
+  showPage('review');
+}
+
+function selectHunter(hunterIdx) {
+  if (!confirm(`Select ${SAMPLE_HUNTERS[hunterIdx].name}? Your contact details will be shared with each other.`)) return;
+  
+  const job = farmerJobs[reviewingJobIndex];
+  job.status = 'filled';
+  job.selectedHunter = hunterIdx;
+  
+  renderJobs();
+  viewContact(reviewingJobIndex);
+}
+
+function viewContact(jobIdx) {
+  const job = farmerJobs[jobIdx];
+  const hunter = SAMPLE_HUNTERS[job.selectedHunter];
+  
+  document.getElementById('contact-details').innerHTML = `
+    <div class="contact-person">
+      <h4>Your selected operator</h4>
+      <p class="name">${hunter.name}</p>
+      <p>📱 ${hunter.phone}</p>
+      <p>✉ ${hunter.email}</p>
+      <p style="font-size:0.75rem;color:var(--text-lt);margin-top:0.375rem;">📍 ${hunter.location}</p>
+    </div>
+    <div class="contact-person">
+      <h4>Your details (shared with operator)</h4>
+      <p class="name">${currentFarmer.first} ${currentFarmer.last}</p>
+      <p>📱 ${currentFarmer.phone}</p>
+      <p>✉ ${currentFarmer.email}</p>
+      <p style="font-size:0.75rem;color:var(--text-lt);margin-top:0.375rem;">📍 ${currentFarmer.region}</p>
+    </div>
+  `;
+  
+  showPage('contact');
+}
+
+// =====================================================
+// SPECIES SELECTOR
+// =====================================================
+function toggleChip(el) {
+  el.classList.toggle('selected');
+}
+
+// =====================================================
+// TABS
+// =====================================================
+function switchTab(tabBtn, contentId) {
+  tabBtn.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tabBtn.classList.add('active');
+  const card = tabBtn.closest('.card');
+  card.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+  document.getElementById(contentId)?.classList.add('active');
+}
+
+// =====================================================
+// NAVIGATION
+// =====================================================
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId)?.classList.add('active');
+  window.scrollTo(0, 0);
+  
+  const nav = document.getElementById('nav-links');
+  if (pageId === 'login' || pageId === 'signup') {
+    nav.innerHTML = '<button class="nav-btn active" onclick="showPage(\'login\')">Sign In</button>';
+  } else {
+    nav.innerHTML = `
+      <button class="nav-btn ${pageId==='dashboard'?'active':''}" onclick="showPage('dashboard')">Dashboard</button>
+      <button class="nav-btn ${pageId==='post-job'?'active':''}" onclick="showPage('post-job')">Post Job</button>
+      <button class="nav-btn" onclick="showPage('login')">Sign Out</button>
+    `;
+  }
+}
+</script>
+</body>
+</html>
